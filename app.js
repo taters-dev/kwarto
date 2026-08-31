@@ -708,13 +708,13 @@
       .then((j) => {
         const names = [];
         if (pickedHotel) names.push(pickedHotel.split(",")[0].trim() || pickedHotel);
+        curatedHotels(place).forEach((n) => names.push(n));
         const cityId = j && j.dest && j.dest.cityId;
         hotelsFrom(j).forEach((h) => {
           if (cityId && h.cityId && Number(h.cityId) !== Number(cityId)) return;
           const n = displayHotelName(h);
           if (n) names.push(n);
         });
-        curatedHotels(place).forEach((n) => names.push(n));
         if (!names.length && place) names.push(place);
         paintHotelNames(names);
       })
