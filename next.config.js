@@ -20,9 +20,10 @@ module.exports = {
   async rewrites() {
     return [
       { source: "/", destination: "/index.html" },
-      { source: "/cebu", destination: "/cebu.html" },
       { source: "/hotel", destination: "/hotel.html" },
       { source: "/results", destination: "/results.html" },
+      { source: "/cebu.html", destination: "/results.html" },
+      { source: "/:city", destination: "/results.html" },
     ];
   },
 };

@@ -1449,6 +1449,32 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   color: var(--muted);
   font-size: 0.95rem;
 }
+.hotel-empty {
+  display: grid;
+  gap: 16px;
+  padding: 8px 0 4px;
+}
+.hotel-empty .hotel-pills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 360px;
+}
+.hotel-empty .hotel-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #0038A8;
+  border-radius: 999px;
+  color: #0038A8;
+  font-weight: 700;
+  text-decoration: none;
+}
+.hotel-photo-gap {
+  min-height: 8px;
+}
 .hotel-pager {
   display: flex;
   align-items: center;

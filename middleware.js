@@ -1,17 +1,38 @@
 import { NextResponse } from 'next/server';
+
+const RESERVED = new Set([
+  "",
+  "api",
+  "hotel",
+  "hotel.html",
+  "results",
+  "results.html",
+  "index",
+  "index.html",
+  "cebu.html",
+]);
+
+function rewriteTo(request, path) {
+  return NextResponse.rewrite(new URL(path, request.url));
+}
+
 export function middleware(request) {
   const p = request.nextUrl.pathname;
-  if (p === '/') {
-    return NextResponse.rewrite(new URL('/index.html', request.url));
+  if (p === "/" || p === "/index.html") {
+    return rewriteTo(request, "/index.html");
   }
-  if (p === '/cebu') {
-    return NextResponse.rewrite(new URL('/cebu.html', request.url));
+  if (p === "/hotel" || p === "/hotel.html") {
+    return rewriteTo(request, "/hotel.html");
   }
-  if (p === '/hotel') {
-    return NextResponse.rewrite(new URL('/hotel.html', request.url));
+  if (p === "/results" || p === "/results.html" || p === "/cebu.html") {
+    return rewriteTo(request, "/results.html");
   }
-  if (p === '/results') {
-    return NextResponse.rewrite(new URL('/results.html', request.url));
+  const slug = p.replace(/^\//, "").replace(/\/$/, "");
+  if (slug && !slug.includes("/") && !slug.includes(".") && !RESERVED.has(slug)) {
+    return rewriteTo(request, "/results.html");
   }
 }
-export const config = { matcher: ['/', '/cebu', '/hotel', '/results'] };
+
+export const config = {
+  matcher: ["/", "/((?!api/|_next/|styles\\.css|app\\.js|cal\\.js|guests\\.js).*)"],
+};
