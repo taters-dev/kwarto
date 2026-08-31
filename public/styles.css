@@ -1412,6 +1412,13 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   .hotel-list .dest-card { min-height: 300px; }
 }
 
+.hotel-price {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #FFD700;
+  margin-top: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
 
 /* Blue footer — hero PH flag blue, white/ink-on-blue type. Do not restyle dest/search/calendar/hero. */
 .nc-foot,

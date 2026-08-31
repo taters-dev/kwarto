@@ -47,7 +47,7 @@
       <div class="wrap">
         <div class="section-head">
           <h2>Hotels in Cebu</h2>
-          <p>Eight places. Tap a hotel to book on Klook. No prices here.</p>
+          <p>Eight places. Tap a hotel to book on Klook.</p>
         </div>
         <div class="hotel-list">
           <a class="dest-card" href="#" data-hotel-name="Shangri-La Mactan">
@@ -129,6 +129,79 @@
       var el = document.getElementById(id);
       var v = p.get(id);
       if (el && v) el.value = v;
+    });
+    
+    var RATE = 57;
+    var currency = function() {
+      return document.documentElement.dataset.cur || "PHP";
+    };
+    
+    function formatPrice(usd, cur) {
+      if (!usd) return null;
+      if (cur === "USD") return "$" + Math.round(usd).toLocaleString("en-US");
+      return "₱" + Math.round(usd * RATE).toLocaleString("en-PH");
+    }
+    
+    function loadHotels() {
+      var checkIn = document.getElementById("checkin");
+      var checkOut = document.getElementById("checkout");
+      var ci = checkIn ? checkIn.value : "";
+      var co = checkOut ? checkOut.value : "";
+      
+      var url = "/api/hotels?location=cebu";
+      if (ci) url += "&checkIn=" + encodeURIComponent(ci);
+      if (co) url += "&checkOut=" + encodeURIComponent(co);
+      url += "&currency=USD";
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.hotels || !data.hotels.length) return;
+          
+          var cards = document.querySelectorAll(".hotel-list .dest-card");
+          data.hotels.forEach(function(hotel, i) {
+            var card = cards[i];
+            if (!card) return;
+            
+            if (hotel.mainPhoto) {
+              var img = card.querySelector("img");
+              if (img) {
+                img.src = hotel.mainPhoto;
+                img.alt = hotel.name;
+              }
+            }
+            
+            var meta = card.querySelector(".meta");
+            if (meta && hotel.priceFrom) {
+              var existing = meta.querySelector(".hotel-price");
+              if (existing) existing.remove();
+              
+              var priceEl = document.createElement("p");
+              priceEl.className = "hotel-price";
+              priceEl.setAttribute("data-usd", hotel.priceFrom);
+              priceEl.textContent = "from " + formatPrice(hotel.priceFrom, currency());
+              meta.appendChild(priceEl);
+            }
+          });
+        })
+        .catch(function() {});
+    }
+    
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", loadHotels);
+    } else {
+      setTimeout(loadHotels, 100);
+    }
+    
+    document.querySelectorAll("[data-cur]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        setTimeout(function() {
+          document.querySelectorAll(".hotel-price[data-usd]").forEach(function(el) {
+            var usd = Number(el.getAttribute("data-usd"));
+            if (usd) el.textContent = "from " + formatPrice(usd, currency());
+          });
+        }, 50);
+      });
     });
   })();
   </script>
