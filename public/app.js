@@ -179,19 +179,6 @@
     return tpWrap(klookDest(query), 137, 4110);
   }
 
-  function kkdayDest(query) {
-    const { checkIn, checkOut } = stayDates();
-    const u = new URL("https://www.kkday.com/en/hotels");
-    if (query) u.searchParams.set("keyword", query);
-    if (checkIn) u.searchParams.set("check_in", checkIn);
-    if (checkOut) u.searchParams.set("check_out", checkOut);
-    return u.toString();
-  }
-
-  function kkdayWrap(query) {
-    return tpWrap(kkdayDest(query), 633, 9074);
-  }
-
   function destQuery(dest, typed) {
     if (dest && dest.label) return dest.label;
     if (dest && dest.text) return dest.text;
@@ -527,22 +514,6 @@
   }
   bindCebuCard();
 
-  function pillHref(a) {
-    const provider = a.getAttribute("data-provider");
-    const hotelName = (a.getAttribute("data-hotel-name") || "").trim();
-    if (provider === "klook") return klookWrap(hotelName);
-    if (provider === "kkday") return kkdayWrap(hotelName);
-    return a.href;
-  }
-
-  function bindHotelPills() {
-    document.querySelectorAll(".hotel-pill[data-provider]").forEach((a) => {
-      a.href = pillHref(a);
-      a.target = "_blank";
-      a.rel = "noopener";
-    });
-  }
-
   function hotelCardName(card) {
     if (!card) return "";
     const fromData = (card.getAttribute("data-hotel-name") || "").trim();
@@ -558,12 +529,30 @@
       if (card.getAttribute("data-bound-hotel") === "1") return;
       card.setAttribute("data-bound-hotel", "1");
       card.addEventListener("click", (e) => {
-        if (e.target && e.target.closest && e.target.closest(".hotel-pill")) return;
         const hotelName = hotelCardName(card);
         if (!hotelName) return;
         e.preventDefault();
         window.open(klookWrap(hotelName), "_blank", "noopener");
       });
+    });
+  }
+
+  function bindContinue() {
+    document.querySelectorAll("[data-continue]").forEach((el) => {
+      if (el.getAttribute("data-bound-continue") === "1") return;
+      el.setAttribute("data-bound-continue", "1");
+      const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
+      const url = klookWrap(q);
+      if (el.tagName === "A") {
+        el.href = url;
+        el.target = "_blank";
+        el.rel = "noopener";
+      } else {
+        el.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          window.open(url, "_blank", "noopener");
+        });
+      }
     });
   }
 
@@ -617,24 +606,19 @@
       '<div class="meta">' +
       "<h3>" + safe + "</h3>" +
       cityLine +
-      '<div class="hotel-pills">' +
-      '<a class="hotel-pill" data-provider="klook" data-hotel-name="' + safe + '" href="#">Klook</a>' +
-      '<a class="hotel-pill" data-provider="kkday" data-hotel-name="' + safe + '" href="#">KKday</a>' +
-      "</div></div></article>";
+      "</div></article>";
   }
 
   function renderEmptyCity(place, hotelName) {
     const q = hotelName || place;
     const safeQ = escapeHtml(q);
     const status = hotelName
-      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Klook and KKday. A full city list needs a partner hotel feed."
-      : "Hotels in " + escapeHtml(place) + " will list here when Klook and KKday send a city feed. Compare on the two partners with your dates.";
+      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Klook. A full city list needs a partner hotel feed."
+      : "Hotels in " + escapeHtml(place) + " will list here when Klook sends a city feed. Compare on Klook with your dates.";
     return '<div class="hotel-empty" data-city-empty>' +
       '<p class="hotel-list-status">' + status + "</p>" +
-      '<div class="hotel-pills">' +
-      '<a class="hotel-pill" data-provider="klook" data-hotel-name="' + safeQ + '" href="#">Klook</a>' +
-      '<a class="hotel-pill" data-provider="kkday" data-hotel-name="' + safeQ + '" href="#">KKday</a>' +
-      "</div></div>";
+      '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Klook</a>' +
+      "</div>";
   }
 
   function uniqueHotelNames(names) {
@@ -677,9 +661,9 @@
     if (!unique.length) {
       const pickedHotel = (params.get("hotel") || "").trim();
       list.innerHTML = renderEmptyCity(hotelPlace || "this city", pickedHotel.split(",")[0].trim());
-      if (countEl) countEl.textContent = "Compare on partners";
+      if (countEl) countEl.textContent = "Compare on Klook";
       if (pager) pager.hidden = true;
-      bindHotelPills();
+      bindContinue();
       return;
     }
     const pages = Math.max(1, Math.ceil(unique.length / HOTEL_PAGE_SIZE));
@@ -698,8 +682,8 @@
     if (prev) prev.disabled = hotelPage <= 1;
     if (next) next.disabled = hotelPage >= pages;
     setPageUrl(hotelPage);
-    bindHotelPills();
     bindHotelCards();
+    bindContinue();
   }
 
   function paintHotelNames(names) {
@@ -792,14 +776,12 @@
       });
   }
 
-  bindHotelPills();
   bindHotelCards();
+  bindContinue();
   fillResults();
   ["checkin", "checkout", "guests", "children", "childages"].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener("change", bindHotelPills);
-    el.addEventListener("input", bindHotelPills);
     el.addEventListener("change", bindHotelCards);
     el.addEventListener("input", bindHotelCards);
     el.addEventListener("change", bindCebuCard);
@@ -820,23 +802,5 @@
         card.removeAttribute("rel");
       }
     }
-    const pill = e.target && e.target.closest ? e.target.closest(".hotel-pill[data-provider]") : null;
-    if (!pill) return;
-    pill.href = pillHref(pill);
   }, true);
-
-  document.querySelectorAll("[data-continue]").forEach((el) => {
-    const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
-    const url = klookWrap(q);
-    if (el.tagName === "A") {
-      el.href = url;
-      el.target = "_blank";
-      el.rel = "noopener";
-    } else {
-      el.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        window.open(url, "_blank", "noopener");
-      });
-    }
-  });
 })();

@@ -51,6 +51,11 @@ if (index.includes('class="nc-nearby"')) {
 }
 const cebu = readFileSync(join("public", "cebu.html"), "utf8");
 const results = readFileSync(join("public", "results.html"), "utf8");
+const hotel = readFileSync(join("public", "hotel.html"), "utf8");
+if (hotel.includes("Agoda") || hotel.includes("agoda.com") || !hotel.includes("Continue on Klook") || !hotel.includes('data-hotel-name="Coral House Mactan"')) {
+  console.error("prep abort: hotel.html must continue on Klook, not Agoda");
+  process.exit(1);
+}
 if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
   console.error("prep abort: cache-bust or need 22 city dest-cards");
   process.exit(1);
@@ -108,12 +113,16 @@ if (cebu.includes("Shangri-La Mactan") || cebu.includes("Marco Polo Plaza") || c
   console.error("prep abort: placeholder hotel names must not be on cebu.html");
   process.exit(1);
 }
-if (cebu.includes("Agoda") || cebu.includes("Trip.com") || cebu.includes("Expedia") || cebu.includes('data-provider="agoda"') || cebu.includes('data-provider="trip"') || cebu.includes('data-provider="expedia"')) {
-  console.error("prep abort: Agoda/Trip/Expedia pills must be removed from cebu.html");
+if (cebu.includes("hotel-pill") || cebu.includes("hotel-pills") || cebu.includes("data-provider") || cebu.includes("KKday") || cebu.includes("kkday")) {
+  console.error("prep abort: partner pills must be gone; Klook is the only click-out");
   process.exit(1);
 }
-if (!cebu.includes("Two partners") || cebu.includes("Three partners")) {
-  console.error("prep abort: Cebu copy must say Two partners");
+if (cebu.includes("Agoda") || cebu.includes("Trip.com") || cebu.includes("Expedia")) {
+  console.error("prep abort: other OTAs must be removed from cebu.html");
+  process.exit(1);
+}
+if (!cebu.includes("book on Klook") || cebu.includes("Two partners") || cebu.includes("Three partners") || cebu.includes("Book on Klook.")) {
+  console.error("prep abort: Cebu copy must send hotels to Klook");
   process.exit(1);
 }
 if (cebu.includes("Coral House") || /class="dest-card"[\s\S]{0,400}data-usd=/.test(cebu)) {
@@ -168,12 +177,8 @@ if (!cssOut.includes(".guest-age-list") || !cssOut.includes(".guest-age-opt") ||
   console.error("prep abort: two-up age rows or custom list CSS missing");
   process.exit(1);
 }
-if (!cssOut.includes(".hotel-pill") || !cssOut.includes("1px solid #0038A8") || !cssOut.includes("grid-template-columns: 1fr 1fr")) {
-  console.error("prep abort: hotel pill CSS missing");
-  process.exit(1);
-}
-if (cssOut.includes("grid-template-columns: 1fr 1fr 1fr")) {
-  console.error("prep abort: hotel pills must be two columns, not three");
+if (cssOut.includes(".hotel-pill") || cssOut.includes(".hotel-pills")) {
+  console.error("prep abort: hotel pill CSS must be removed");
   process.exit(1);
 }
 if (/\.nc-trips \.dest-grid\s*\{[^}]*overflow-x:\s*auto/s.test(cssOut)) {
@@ -241,8 +246,12 @@ if (appjs.includes("CITY_HOTELS") || appjs.includes("function curatedHotels")) {
   console.error("prep abort: curated hotel-name lists must not drive results");
   process.exit(1);
 }
-if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count") || !results.includes("data-hotel-pager") || !results.includes("data-page-next") || !results.includes("data-city-page") || !results.includes("Two partners")) {
+if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count") || !results.includes("data-hotel-pager") || !results.includes("data-page-next") || !results.includes("data-city-page") || !results.includes("book on Klook")) {
   console.error("prep abort: results.html must be a Kwarto city hotel list with pager");
+  process.exit(1);
+}
+if (results.includes("Two partners") || results.includes("KKday") || results.includes("kkday") || results.includes("kwarto-wm.vercel.app")) {
+  console.error("prep abort: results.html must be Klook-only with the local wordmark");
   process.exit(1);
 }
 if (results.includes("data-usd") || results.includes("\u20b1") || results.includes("agoda.com") || results.includes('class="dest-grid"')) {
@@ -257,8 +266,12 @@ if (!appjs.includes("function tpWrap") || !appjs.includes("tp.media") || !appjs.
   console.error("prep abort: app.js must contain klook wrap");
   process.exit(1);
 }
-if (!appjs.includes("www.kkday.com/en/hotels") || !appjs.includes("function kkdayWrap") || !appjs.includes("campaign_id")) {
-  console.error("prep abort: KKday wrap missing");
+if (appjs.includes("kkday") || appjs.includes("kkday.com") || appjs.includes("function kkdayWrap")) {
+  console.error("prep abort: KKday wrap must be removed; KKday has no PH inventory");
+  process.exit(1);
+}
+if (!appjs.includes("campaign_id")) {
+  console.error("prep abort: travelpayouts wrap missing");
   process.exit(1);
 }
 if (appjs.includes("agodaUrl") || (appjs.includes("cid=0") && appjs.includes("www.agoda.com/search"))) {
@@ -271,8 +284,12 @@ if (chooseChunk.includes("window.open") || chooseChunk.includes("location.href")
   process.exit(1);
 }
 
-if (!appjs.includes("function bindHotelPills()") || !appjs.includes("data-provider") || !appjs.includes('provider === "klook"') || !appjs.includes('provider === "kkday"')) {
-  console.error("prep abort: hotel pill URL binders missing for klook/kkday");
+if (appjs.includes("bindHotelPills") || appjs.includes("pillHref") || appjs.includes("hotel-pill") || appjs.includes("data-provider")) {
+  console.error("prep abort: hotel pill binders must be removed");
+  process.exit(1);
+}
+if (!appjs.includes('data-hotel-name') || !appjs.includes("function destCardQuery")) {
+  console.error("prep abort: dest-card binder must send hotel cards to Klook");
   process.exit(1);
 }
 if (!appjs.includes("function bindCebuCard()") || !appjs.includes("function destSlug") || !appjs.includes('slug: "cebu"')) {

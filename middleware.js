@@ -1,36 +1,46 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
+/** City slugs like /cebu, /manila, /tokyo — not reserved paths. */
 const RESERVED = new Set([
-  "",
   "api",
   "hotel",
-  "hotel.html",
   "results",
-  "results.html",
-  "index",
-  "index.html",
   "cebu.html",
+  "index.html",
+  "hotel.html",
+  "results.html",
+  "styles.css",
+  "app.js",
+  "cal.js",
+  "guests.js",
+  "favicon.ico",
+  "robots.txt",
+  "sitemap.xml",
+  "brand",
 ]);
 
-function rewriteTo(request, path) {
-  return NextResponse.rewrite(new URL(path, request.url));
+function isCitySlug(pathname) {
+  const slug = pathname.replace(/^\/+|\/+$/g, "").toLowerCase();
+  if (!slug || slug.includes("/") || slug.includes(".")) return false;
+  if (RESERVED.has(slug)) return false;
+  return /^[a-z0-9][a-z0-9-]{0,62}$/.test(slug);
 }
 
 export function middleware(request) {
-  const p = request.nextUrl.pathname;
-  if (p === "/" || p === "/index.html") {
-    return rewriteTo(request, "/index.html");
+  const { pathname } = request.nextUrl;
+  if (pathname === "/") {
+    return NextResponse.rewrite(new URL("/index.html", request.url));
   }
-  if (p === "/hotel" || p === "/hotel.html") {
-    return rewriteTo(request, "/hotel.html");
+  if (pathname === "/hotel") {
+    return NextResponse.rewrite(new URL("/hotel.html", request.url));
   }
-  if (p === "/results" || p === "/results.html" || p === "/cebu.html") {
-    return rewriteTo(request, "/results.html");
+  if (pathname === "/results") {
+    return NextResponse.rewrite(new URL("/results.html", request.url));
   }
-  const slug = p.replace(/^\//, "").replace(/\/$/, "");
-  if (slug && !slug.includes("/") && !slug.includes(".") && !RESERVED.has(slug)) {
-    return rewriteTo(request, "/results.html");
+  if (isCitySlug(pathname)) {
+    return NextResponse.rewrite(new URL("/results.html", request.url));
   }
+  return NextResponse.next();
 }
 
 export const config = {

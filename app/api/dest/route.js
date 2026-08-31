@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 
 // Typeahead only. Agoda GetUnifiedSuggestResult resolves a city/area/hotel
 // label and ids for search. It is not a Kwarto hotel inventory feed — Agoda is
-// not a provider. Hotel lists come from /api/hotels (Klook/KKday when wired).
+// not a provider. Hotel lists come from /api/hotels (Klook when wired).
 
 const SUGGEST_CAP = 8;
 
