@@ -61,11 +61,12 @@
   });
 
   const params = new URLSearchParams(location.search);
-  const city = params.get("city");
+  const city = params.get("hotel") || params.get("city");
   const head = document.querySelector(".page-head h1");
   if (city && head) {
-    head.textContent = city;
-    document.title = city + " hotels — Kwarto";
+    const short = String(city).split(",")[0].trim() || city;
+    head.textContent = short;
+    document.title = short + " hotels — Kwarto";
   }
 
   const currency = () => document.documentElement.dataset.cur || "PHP";
@@ -202,13 +203,16 @@
     return q.indexOf("cebu") !== -1 || q.indexOf("mactan") !== -1;
   }
 
-  function fetchSuggest(typed, signal) {
-    return fetch("/api/dest?q=" + encodeURIComponent(typed), signal ? { signal: signal } : undefined)
+  function fetchSuggest(typed, signal, extra) {
+    let url = "/api/dest?q=" + encodeURIComponent(typed);
+    if (extra && extra.hotels) url += "&hotels=1";
+    return fetch(url, signal ? { signal: signal } : undefined)
       .then((r) => r.json())
       .then((j) => {
         const list = Array.isArray(j && j.suggestions) ? j.suggestions.filter(destOk) : [];
         const dest = destOk(j && j.dest) ? j.dest : null;
-        return { dest: dest, suggestions: list };
+        const hotels = Array.isArray(j && j.hotels) ? j.hotels.filter(destOk) : [];
+        return { dest: dest, suggestions: list, hotels: hotels };
       });
   }
 
@@ -403,6 +407,7 @@
         e.preventDefault();
         if (visibleRows[0]) choose(visibleRows[0]);
         else closeTypeahead();
+        if (searchForm && picked && destOk(picked)) searchForm.requestSubmit();
       }
     });
     document.addEventListener("pointerdown", (e) => {
@@ -434,11 +439,15 @@
         return;
       }
       const ready = destNow(typed) || resolveDest(typed);
+      if (ready && ready.hotelId) {
+        location.href = resultsListHref(ready, typed);
+        return;
+      }
       if (isCebuLocal(ready, typed)) {
         location.href = cebuListHref();
         return;
       }
-      window.open(klookWrap(destQuery(ready, typed)), "_blank", "noopener");
+      location.href = resultsListHref(ready, typed);
     });
   }
 
@@ -464,10 +473,8 @@
 
   bindDestCards();
 
-  function cebuListHref() {
+  function stayQuery(u) {
     const { checkIn, checkOut, guests, children, childages } = stayDates();
-    const u = new URL("cebu.html", location.href);
-    u.searchParams.set("city", "Cebu, Philippines");
     u.searchParams.set("checkin", checkIn);
     u.searchParams.set("checkout", checkOut);
     u.searchParams.set("guests", String(guests));
@@ -475,7 +482,21 @@
       u.searchParams.set("children", String(children));
       if (childages) u.searchParams.set("childages", childages);
     }
-    return "cebu.html" + u.search;
+    return u.search;
+  }
+
+  function cebuListHref() {
+    const u = new URL("cebu.html", location.href);
+    u.searchParams.set("city", "Cebu, Philippines");
+    return "cebu.html" + stayQuery(u);
+  }
+
+  function resultsListHref(dest, typed) {
+    const u = new URL("results.html", location.href);
+    const label = destQuery(dest, typed);
+    u.searchParams.set("city", label || typed || "");
+    if (dest && dest.hotelId && dest.label) u.searchParams.set("hotel", dest.label);
+    return "results.html" + stayQuery(u);
   }
 
   function bindCebuCard() {
@@ -506,12 +527,154 @@
     });
   }
 
+  function hotelCardName(card) {
+    if (!card) return "";
+    const fromData = (card.getAttribute("data-hotel-name") || "").trim();
+    if (fromData) return fromData;
+    const h3 = card.querySelector("h3");
+    return h3 ? String(h3.textContent || "").trim() : "";
+  }
+
+  function bindHotelCards() {
+    document.querySelectorAll(".hotel-list .dest-card").forEach((card) => {
+      const name = hotelCardName(card);
+      if (name && !card.getAttribute("data-hotel-name")) card.setAttribute("data-hotel-name", name);
+      if (card.getAttribute("data-bound-hotel") === "1") return;
+      card.setAttribute("data-bound-hotel", "1");
+      card.addEventListener("click", (e) => {
+        if (e.target && e.target.closest && e.target.closest(".hotel-pill")) return;
+        const hotelName = hotelCardName(card);
+        if (!hotelName) return;
+        e.preventDefault();
+        window.open(klookWrap(hotelName), "_blank", "noopener");
+      });
+    });
+  }
+
+  const HOTEL_PHOTOS = [
+    "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1551882547-ff40c63ea5b5?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1400&q=80"
+  ];
+
+  function hotelPhoto(name) {
+    const s = String(name || "");
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return HOTEL_PHOTOS[h % HOTEL_PHOTOS.length];
+  }
+
+  function displayHotelName(row) {
+    const label = String((row && row.label) || "").trim();
+    if (row && row.hotelId && label.indexOf(",") !== -1) {
+      return label.split(",")[0].trim() || label;
+    }
+    return label;
+  }
+
+  function hotelsFrom(j) {
+    const fromField = Array.isArray(j && j.hotels) ? j.hotels : [];
+    const fromSug = Array.isArray(j && j.suggestions)
+      ? j.suggestions.filter((s) => s && (s.hotelId || s.kind === "hotel"))
+      : [];
+    const out = [];
+    const seen = new Set();
+    fromField.concat(fromSug).forEach((h) => {
+      if (!destOk(h)) return;
+      const key = h.hotelId ? "h" + h.hotelId : String(h.label || "").toLowerCase();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      out.push(h);
+    });
+    return out;
+  }
+
+  function renderHotelArticle(name) {
+    const safe = escapeHtml(name);
+    return '<article class="dest-card" data-hotel-name="' + safe + '">' +
+      '<img src="' + hotelPhoto(name) + '" alt="" />' +
+      '<div class="meta">' +
+      "<h3>" + safe + "</h3>" +
+      '<div class="hotel-pills">' +
+      '<a class="hotel-pill" data-provider="klook" data-hotel-name="' + safe + '" href="#">Klook</a>' +
+      '<a class="hotel-pill" data-provider="kkday" data-hotel-name="' + safe + '" href="#">KKday</a>' +
+      "</div></div></article>";
+  }
+
+  function paintHotelNames(names) {
+    const list = document.querySelector("[data-results-list]") || document.querySelector(".hotel-list");
+    const countEl = document.querySelector("[data-hotel-count]");
+    if (!list) return;
+    const unique = [];
+    const seen = new Set();
+    (names || []).forEach((n) => {
+      const name = String(n || "").trim();
+      const key = name.toLowerCase();
+      if (!name || seen.has(key)) return;
+      seen.add(key);
+      unique.push(name);
+    });
+    if (!unique.length) {
+      list.innerHTML = '<p class="hotel-list-status">No hotels yet. Try another city, or tap Search.</p>';
+      if (countEl) countEl.textContent = "0 hotels";
+      return;
+    }
+    list.innerHTML = unique.map(renderHotelArticle).join("");
+    if (countEl) countEl.textContent = unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    bindHotelPills();
+    bindHotelCards();
+  }
+
+  function fillResults() {
+    const list = document.querySelector("[data-results-list]");
+    if (!list) return;
+    const place = (params.get("hotel") || params.get("city") || "").trim();
+    const short = place.split(",")[0].trim() || place || "Hotels";
+    const crumb = document.querySelector("[data-results-place]");
+    const heading = document.querySelector("[data-results-heading]");
+    if (crumb) crumb.textContent = short;
+    if (heading) heading.textContent = "Hotels in " + short;
+    if (head) {
+      head.textContent = short;
+      document.title = short + " hotels — Kwarto";
+    }
+    const pickedHotel = (params.get("hotel") || "").trim();
+    const q = pickedHotel || place;
+    if (!q) {
+      paintHotelNames([]);
+      return;
+    }
+    fetchSuggest(q, null, { hotels: true })
+      .then((j) => {
+        const names = [];
+        if (pickedHotel) names.push(pickedHotel.split(",")[0].trim() || pickedHotel);
+        hotelsFrom(j).forEach((h) => {
+          const n = displayHotelName(h);
+          if (n) names.push(n);
+        });
+        if (!names.length && place) names.push(place);
+        paintHotelNames(names);
+      })
+      .catch(() => {
+        paintHotelNames(pickedHotel ? [pickedHotel] : place ? [place] : []);
+      });
+  }
+
   bindHotelPills();
+  bindHotelCards();
+  fillResults();
   ["checkin", "checkout", "guests", "children", "childages"].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener("change", bindHotelPills);
     el.addEventListener("input", bindHotelPills);
+    el.addEventListener("change", bindHotelCards);
+    el.addEventListener("input", bindHotelCards);
     el.addEventListener("change", bindCebuCard);
     el.addEventListener("input", bindCebuCard);
     el.addEventListener("change", bindDestCards);

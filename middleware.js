@@ -10,5 +10,8 @@ export function middleware(request) {
   if (p === '/hotel') {
     return NextResponse.rewrite(new URL('/hotel.html', request.url));
   }
+  if (p === '/results') {
+    return NextResponse.rewrite(new URL('/results.html', request.url));
+  }
 }
-export const config = { matcher: ['/', '/cebu', '/hotel'] };
+export const config = { matcher: ['/', '/cebu', '/hotel', '/results'] };

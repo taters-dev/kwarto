@@ -4,7 +4,7 @@ import { join } from "node:path";
 mkdirSync("public", { recursive: true });
 
 const cacheBust = "hotels8";
-const need = ["index.html", "cebu.html", "hotel.html", "cal.js", "guests.js", "app.js", "styles.css"];
+const need = ["index.html", "cebu.html", "hotel.html", "results.html", "cal.js", "guests.js", "app.js", "styles.css"];
 
 function applyCacheBust(html) {
   return html
@@ -50,6 +50,7 @@ if (index.includes('class="nc-nearby"')) {
   process.exit(1);
 }
 const cebu = readFileSync(join("public", "cebu.html"), "utf8");
+const results = readFileSync(join("public", "results.html"), "utf8");
 if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
   console.error("prep abort: cache-bust or need 22 city dest-cards");
   process.exit(1);
@@ -214,6 +215,31 @@ if (appjs.includes("resolveTyped(typed).then(go)")) {
 }
 if (!appjs.includes("function destNow(typed)") || !appjs.includes("location.href = cebuListHref()") || !appjs.includes("function isCebuLocal")) {
   console.error("prep abort: Find My Hotel must navigate to cebu.html for Cebu");
+  process.exit(1);
+}
+if (!appjs.includes("function resultsListHref") || !appjs.includes("location.href = resultsListHref") || !appjs.includes("results.html")) {
+  console.error("prep abort: Find My Hotel must stay on Kwarto results for non-Cebu");
+  process.exit(1);
+}
+const submitChunk = appjs.slice(appjs.indexOf('searchForm.addEventListener("submit"'), appjs.indexOf("function destCardQuery"));
+if (!submitChunk || submitChunk.includes("window.open")) {
+  console.error("prep abort: Find My Hotel must not open a partner tab");
+  process.exit(1);
+}
+if (!appjs.includes("function fillResults") || !appjs.includes("function bindHotelCards") || !appjs.includes("data-results-list") || !appjs.includes("j.hotels")) {
+  console.error("prep abort: results hotel-list renderer missing");
+  process.exit(1);
+}
+if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count")) {
+  console.error("prep abort: results.html must be a Kwarto hotel list");
+  process.exit(1);
+}
+if (results.includes("data-usd") || results.includes("\u20b1") || results.includes("agoda.com") || results.includes('class="dest-grid"')) {
+  console.error("prep abort: results.html must not have fake prices, Agoda, or dest-grid");
+  process.exit(1);
+}
+if (!results.includes('src="/cal.js?v=') || !results.includes('src="/guests.js?v=') || !results.includes('src="/app.js?v=')) {
+  console.error("prep abort: results.html scripts must be root-absolute");
   process.exit(1);
 }
 if (!appjs.includes("function tpWrap") || !appjs.includes("tp.media") || !appjs.includes("www.klook.com/hotels/") || !appjs.includes("function klookWrap") || !appjs.includes("window.open(klookWrap(")) {

@@ -1442,6 +1442,12 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   width: 100%;
   flex: none;
   min-height: 320px;
+  cursor: pointer;
+}
+.hotel-list-status {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 @media (max-width: 900px) {
   .hotel-list .dest-card { min-height: 300px; }

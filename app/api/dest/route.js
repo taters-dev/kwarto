@@ -70,6 +70,54 @@ function listSuggest(data) {
   return out;
 }
 
+function listHotels(data, limit) {
+  const cap = limit || 12;
+  const items = Array.isArray(data && data.ViewModelList) ? data.ViewModelList : [];
+  const out = [];
+  const seen = new Set();
+  for (const it of items) {
+    const row = mapItem(it);
+    if (!row || !row.hotelId) continue;
+    const key = "h" + row.hotelId;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(row);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
+function mergeHotels(base, extra, limit) {
+  const cap = limit || 12;
+  const out = [];
+  const seen = new Set();
+  for (const row of (base || []).concat(extra || [])) {
+    if (!row || !row.hotelId) continue;
+    const key = "h" + row.hotelId;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(row);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
+async function fetchAgoda(q) {
+  const url = "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/?" +
+    new URLSearchParams({ searchText: q, origin: "US", cid: "-1", pageTypeId: "1" }).toString();
+  const r = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+      Referer: "https://www.agoda.com/",
+      Origin: "https://www.agoda.com"
+    },
+    cache: "no-store"
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
 function pickDest(data, suggestions) {
   if (suggestions && suggestions.length) {
     const city = suggestions.find((s) => s.kind === "city" || (s.cityId && !s.hotelId && !s.areaId));
@@ -87,25 +135,26 @@ function pickDest(data, suggestions) {
 }
 
 export async function GET(request) {
-  const q = (new URL(request.url).searchParams.get("q") || "").trim();
-  if (q.length < 2) return Response.json({ dest: null, suggestions: [] });
-  const url = "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/?" +
-    new URLSearchParams({ searchText: q, origin: "US", cid: "-1", pageTypeId: "1" }).toString();
+  const req = new URL(request.url);
+  const q = (req.searchParams.get("q") || "").trim();
+  const wantHotels = req.searchParams.get("hotels") === "1";
+  if (q.length < 2) return Response.json({ dest: null, suggestions: [], hotels: [] });
   try {
-    const r = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-        Referer: "https://www.agoda.com/",
-        Origin: "https://www.agoda.com"
-      },
-      cache: "no-store"
-    });
-    if (!r.ok) return Response.json({ dest: null, suggestions: [] });
-    const data = await r.json();
+    const data = await fetchAgoda(q);
+    if (!data) return Response.json({ dest: null, suggestions: [], hotels: [] });
     const suggestions = listSuggest(data);
-    return Response.json({ dest: pickDest(data, suggestions), suggestions });
+    let hotels = listHotels(data);
+    if (wantHotels && hotels.length < 6) {
+      const hotelQ = /hotel/i.test(q) ? q : (q.split(",")[0] || q).trim() + " hotel";
+      if (hotelQ.toLowerCase() !== q.toLowerCase()) {
+        try {
+          const extra = await fetchAgoda(hotelQ);
+          hotels = mergeHotels(hotels, listHotels(extra));
+        } catch (e) {}
+      }
+    }
+    return Response.json({ dest: pickDest(data, suggestions), suggestions, hotels });
   } catch (e) {
-    return Response.json({ dest: null, suggestions: [] });
+    return Response.json({ dest: null, suggestions: [], hotels: [] });
   }
 }
