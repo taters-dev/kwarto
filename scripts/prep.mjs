@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels8";
+const cacheBust = "hotels9";
 const need = ["index.html", "cebu.html", "hotel.html", "cal.js", "guests.js", "app.js", "styles.css"];
 
 function applyCacheBust(html) {
