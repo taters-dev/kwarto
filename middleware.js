@@ -7,5 +7,8 @@ export function middleware(request) {
   if (p === '/cebu') {
     return NextResponse.rewrite(new URL('/cebu.html', request.url));
   }
+  if (p === '/hotel') {
+    return NextResponse.rewrite(new URL('/hotel.html', request.url));
+  }
 }
-export const config = { matcher: ['/', '/cebu'] };
+export const config = { matcher: ['/', '/cebu', '/hotel'] };

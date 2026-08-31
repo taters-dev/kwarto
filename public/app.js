@@ -112,13 +112,9 @@
     };
   }
 
-  function nearbyHotels() {
-    return DEST.slice(0, 10).map(asSuggest);
-  }
-
   function localSuggest(raw) {
     const q = (raw || "").trim().toLowerCase();
-    if (!q) return nearbyHotels();
+    if (!q) return [];
     const out = [];
     const seen = new Set();
     for (const d of DEST) {
@@ -325,10 +321,6 @@
     openTypeahead();
   }
 
-  function showNearby() {
-    renderTypeahead(nearbyHotels(), "", "Nearby Hotels");
-  }
-
   function requestSuggest(typed) {
     const q = (typed || "").trim();
     const seq = ++suggestSeq;
@@ -337,7 +329,7 @@
       suggestCtrl = null;
     }
     if (!q) {
-      showNearby();
+      closeTypeahead();
       return;
     }
     const local = localSuggest(q);
