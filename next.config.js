@@ -6,10 +6,16 @@ module.exports = {
     return config;
   },
   outputFileTracingIncludes: {
-    "/styles.css": ["./styles.css"],
-    "/app.js": ["./app.js"],
-    "/cal.js": ["./cal.js"],
-    "/guests.js": ["./guests.js"],
+    "/*": [
+      "./styles.css",
+      "./app.js",
+      "./cal.js",
+      "./guests.js",
+      "./public/styles.css",
+      "./public/app.js",
+      "./public/cal.js",
+      "./public/guests.js",
+    ],
   },
   async rewrites() {
     return [
