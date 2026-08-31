@@ -432,6 +432,8 @@
   function destCardQuery(a) {
     const href = a.getAttribute("href") || "";
     if (/cebu(\.html)?/i.test(href) && href.indexOf("agoda.com") === -1 && href.indexOf("klook.com") === -1) return "";
+    const hotel = (a.getAttribute("data-hotel-name") || "").trim();
+    if (hotel) return hotel;
     const city = (a.getAttribute("data-city") || "").trim();
     if (city) return city;
     const h3 = a.querySelector("h3");
@@ -477,27 +479,9 @@
   }
   bindCebuCard();
 
-  function pillHref(a) {
-    const provider = a.getAttribute("data-provider");
-    const hotelName = (a.getAttribute("data-hotel-name") || "").trim();
-    if (provider === "klook") return klookWrap(hotelName);
-    return a.href;
-  }
-
-  function bindHotelPills() {
-    document.querySelectorAll(".hotel-pill[data-provider]").forEach((a) => {
-      a.href = pillHref(a);
-      a.target = "_blank";
-      a.rel = "noopener";
-    });
-  }
-
-  bindHotelPills();
   ["checkin", "checkout", "guests", "children", "childages"].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener("change", bindHotelPills);
-    el.addEventListener("input", bindHotelPills);
     el.addEventListener("change", bindCebuCard);
     el.addEventListener("input", bindCebuCard);
     el.addEventListener("change", bindDestCards);
@@ -505,17 +489,12 @@
   });
   document.addEventListener("pointerdown", (e) => {
     const card = e.target && e.target.closest ? e.target.closest("a.dest-card") : null;
-    if (card) {
-      const q = destCardQuery(card);
-      if (q) {
-        card.href = klookWrap(q);
-        card.target = "_blank";
-        card.rel = "noopener";
-      }
-    }
-    const pill = e.target && e.target.closest ? e.target.closest(".hotel-pill[data-provider]") : null;
-    if (!pill) return;
-    pill.href = pillHref(pill);
+    if (!card) return;
+    const q = destCardQuery(card);
+    if (!q) return;
+    card.href = klookWrap(q);
+    card.target = "_blank";
+    card.rel = "noopener";
   }, true);
 
   document.querySelectorAll("[data-continue]").forEach((el) => {
