@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.vercel/
+*.tgz
+deploy-args.json
+.env
+.env.*
+!.env.example

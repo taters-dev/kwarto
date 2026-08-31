@@ -1,0 +1,13 @@
+{
+  "name": "kwarto",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/prep.mjs && next build",
+    "vercel-build": "node scripts/prep.mjs && next build"
+  },
+  "dependencies": {
+    "next": "15.5.24",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  }
+}

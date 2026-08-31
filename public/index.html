@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kwarto | Hotels for Filipinos</title>
+  <meta name="description" content="No hotel yet? No problem. Cebu, Bangkok, Tokyo, Singapore. Stress-free booking. PHP or USD." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Red+Hat+Display:ital,wght@0,700;1,700;1,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=hotels7" />
+</head>
+<body class="nc">
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nc-top">
+    <div class="wrap nc-top-inner">
+      <a class="nc-logo" href="index.html" aria-label="Kwarto home">
+        <img class="nc-logo-img" src="https://kwarto-wm.vercel.app/kwarto-wordmark.png" alt="Kwarto" />
+      </a>
+      <nav class="nc-top-links" aria-label="Site">
+        <div class="nc-fx" role="group" aria-label="Currency">
+          <button type="button" data-cur="PHP" class="is-on">PHP</button>
+          <button type="button" data-cur="USD">USD</button>
+        </div>
+        <a href="#search">Search</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="nc-hero">
+      <div class="nc-red-wash" aria-hidden="true"></div>
+      <img class="nc-leaf-loose nc-leaf-tl" src="https://tuloy-leaves.vercel.app/leaves-flow-ship.webp" alt="" />
+      <img class="nc-leaf-loose nc-leaf-br" src="https://tuloy-leaves.vercel.app/leaves-flow-ship.webp" alt="" />
+      <div class="wrap nc-hero-grid">
+        <div class="nc-hero-copy">
+          <h1>No hotel yet?<br>No problem.</h1>
+          <p class="nc-sub">Cebu tonight. Tokyo next week.<br>Stress-free booking.</p>
+        </div>
+        <div class="nc-mascot" aria-hidden="true">
+          <div class="nc-red-blob"></div>
+          <div class="nc-sun"></div>
+          <img src="https://tuloy-agila.vercel.app/agila-flow-ship.webp" alt="" />
+        </div>
+      </div>
+      <div class="wrap nc-search-wrap">
+        <form class="search nc-hero-search" id="search" action="#" method="get">
+          <div class="search-field search-where">
+            <label for="city">Where to</label>
+            <input id="city" name="city" type="text" placeholder="City, hotel, or airport" value="" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" aria-autocomplete="list" aria-controls="typeahead" aria-expanded="false" />            <div id="typeahead" class="typeahead" hidden role="listbox" aria-label="Suggestions"></div>
+          </div>
+          <div class="search-field search-dates">
+            <label for="dates">Dates</label>
+            <input id="checkin" name="checkin" type="hidden" value="2026-09-12" />
+            <input id="checkout" name="checkout" type="hidden" value="2026-09-15" />
+            <button type="button" id="dates" class="date-trigger" aria-haspopup="dialog" aria-controls="cal-root">Sep 12 – Sep 15</button>
+          </div>
+          <div class="search-field search-guests">
+            <label for="guests-trigger">Guests</label>
+            <input id="guests" name="guests" type="hidden" value="2" />
+            <input id="children" name="children" type="hidden" value="0" />
+            <input id="childages" name="childages" type="hidden" value="" />
+            <button type="button" id="guests-trigger" class="guest-trigger" aria-haspopup="dialog" aria-controls="guest-root">2 Guests</button>
+          </div>
+          <button type="submit">Find My Hotel</button>
+        </form>
+        <div id="guest-root" class="guest-root" hidden>
+          <div class="guest-backdrop" data-guest-close></div>
+          <div class="guest-panel" role="dialog" aria-modal="true" aria-label="Guests">
+            <div class="guest-handle" aria-hidden="true"></div>
+            <div class="guest-rows">
+              <div class="guest-row">
+                <p class="guest-row-title">Adults:</p>
+                <div class="guest-step">
+                  <button type="button" data-guest-minus="adults" aria-label="Fewer adults">−</button>
+                  <span data-guest-count="adults">2</span>
+                  <button type="button" data-guest-plus="adults" aria-label="More adults">+</button>
+                </div>
+              </div>
+              <div class="guest-row">
+                <p class="guest-row-title">Children:</p>
+                <div class="guest-step">
+                  <button type="button" data-guest-minus="children" aria-label="Fewer children">−</button>
+                  <span data-guest-count="children">0</span>
+                  <button type="button" data-guest-plus="children" aria-label="More children">+</button>
+                </div>
+              </div>
+            </div>
+            <p class="guest-price-copy" data-guest-price-copy hidden>Get the best price for your needs</p>
+            <div class="guest-ages" data-guest-ages hidden></div>
+            <button type="button" class="guest-done" data-guest-done>Done</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section nc-trips" id="destinations">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Don't Skip These Trips</h2>
+          <p>Cebu first. Then the islands. Scroll.</p>
+        </div>
+        <div class="dest-grid">
+          <a class="dest-card" href="cebu.html">
+            <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Mactan water in the morning" />
+            <div class="meta">
+              <h3>Hotels in Cebu</h3>
+              <p class="why">Home court. Airport, city, beach.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Boracay">
+            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Boracay white sand beach" />
+            <div class="meta">
+              <h3>Hotels in Boracay</h3>
+              <p class="why">White sand. One boat.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Siargao">
+            <img src="https://images.unsplash.com/photo-1519855079734-7f171f9c2af8?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Cloud 9 boardwalk in Siargao" />
+            <div class="meta">
+              <h3>Hotels in Siargao</h3>
+              <p class="why">Cloud 9. Then sleep.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Bohol">
+            <img src="https://images.unsplash.com/photo-1667823506151-836beb11723d?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Chocolate Hills in Bohol" />
+            <div class="meta">
+              <h3>Hotels in Bohol</h3>
+              <p class="why">Hills. Then a quiet room.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Palawan">
+            <img src="https://images.unsplash.com/photo-1749995925383-5195d00a6811?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="El Nido lagoon in Palawan" />
+            <div class="meta">
+              <h3>Hotels in Palawan</h3>
+              <p class="why">The long one. One card.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Coron">
+            <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Coron limestone and water" />
+            <div class="meta">
+              <h3>Hotels in Coron</h3>
+              <p class="why">Wrecks. Lakes. Then sleep.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Baguio">
+            <img src="https://images.unsplash.com/photo-1756731503024-a22ea6f8aba0?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Baguio in the pines" />
+            <div class="meta">
+              <h3>Hotels in Baguio</h3>
+              <p class="why">Jacket weather. Then a fire.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Davao">
+            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Davao highlands" />
+            <div class="meta">
+              <h3>Hotels in Davao</h3>
+              <p class="why">South. One flight down.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Iloilo">
+            <img src="https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Iloilo coast" />
+            <div class="meta">
+              <h3>Hotels in Iloilo</h3>
+              <p class="why">Food first. Then the room.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Dumaguete">
+            <img src="https://images.unsplash.com/photo-1505144808419-1957a94ca61e?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Dumaguete shoreline" />
+            <div class="meta">
+              <h3>Hotels in Dumaguete</h3>
+              <p class="why">Boulevard. Then dive.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Camiguin">
+            <img src="https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Camiguin island" />
+            <div class="meta">
+              <h3>Hotels in Camiguin</h3>
+              <p class="why">Volcano. Then a quiet bay.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Batanes">
+            <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Batanes hills" />
+            <div class="meta">
+              <h3>Hotels in Batanes</h3>
+              <p class="why">The far north. Wind and grass.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Manila">
+            <img src="https://images.unsplash.com/photo-1652432155524-bd2c5c444ce6?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Manila skyline at night" />
+            <div class="meta">
+              <h3>Hotels in Manila</h3>
+              <p class="why">Skyline. Then Intramuros.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="El Nido">
+            <img src="https://images.unsplash.com/photo-1744069729320-3c5fb7120089?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Karst peaks over the sea in El Nido" />
+            <div class="meta">
+              <h3>Hotels in El Nido</h3>
+              <p class="why">Karst. Then a kayak.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Tagaytay">
+            <img src="https://images.unsplash.com/photo-1633670057397-b12fc5289e96?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Taal from the Tagaytay ridge" />
+            <div class="meta">
+              <h3>Hotels in Tagaytay</h3>
+              <p class="why">Taal from the ridge.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Clark">
+            <img src="https://images.unsplash.com/photo-1736500196909-a42cc952589e?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Philippine Airlines at the gate" />
+            <div class="meta">
+              <h3>Hotels in Clark</h3>
+              <p class="why">Airport. Then a weekend.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Puerto Galera">
+            <img src="https://images.unsplash.com/photo-1704865417501-8706260f9365?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Bangka boats on the sand" />
+            <div class="meta">
+              <h3>Hotels in Puerto Galera</h3>
+              <p class="why">Dive first. Then the room.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Bacolod">
+            <img src="https://images.unsplash.com/photo-1509850629763-f55dbe6a607e?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="The Ruins in Bacolod" />
+            <div class="meta">
+              <h3>Hotels in Bacolod</h3>
+              <p class="why">Sugar city. Then a night market.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Cagayan de Oro">
+            <img src="https://images.unsplash.com/photo-1542371123-e1a70169dd64?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="North Mindanao hills and road" />
+            <div class="meta">
+              <h3>Hotels in Cagayan de Oro</h3>
+              <p class="why">North Mindanao. One hop.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Subic">
+            <img src="https://images.unsplash.com/photo-1734780093867-2e6fceb8a283?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Subic Bay in the morning" />
+            <div class="meta">
+              <h3>Hotels in Subic</h3>
+              <p class="why">The bay. Then a weekend.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Vigan">
+            <img src="https://images.unsplash.com/photo-1589812635389-bba67781b7dd?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Cobblestone street in Vigan" />
+            <div class="meta">
+              <h3>Hotels in Vigan</h3>
+              <p class="why">Cobblestone. Then a calesa.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="#" data-city="Legazpi">
+            <img src="https://images.unsplash.com/photo-1555590858-be28a58c2688?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Mayon volcano over Legazpi" />
+            <div class="meta">
+              <h3>Hotels in Legazpi</h3>
+              <p class="why">Mayon. Then a quiet room.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="nc-stats">
+      <div class="wrap nc-stats-grid">
+        <div><b>PHP</b><span>first. USD if you want it</span></div>
+        <div><b>Cebu</b><span>is live first</span></div>
+        <div><b>Partner</b><span>checkout, not ours</span></div>
+      </div>
+    </section>
+
+    <section class="section how" id="how">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Find the right hotel, fast</h2>
+          <p>Three steps. Then you’re in the room.</p>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <span class="n">01</span>
+            <h3>Search</h3>
+            <p>City, dates, guests. Same shape as every trip you’ve booked.</p>
+          </div>
+          <div class="step">
+            <span class="n">02</span>
+            <h3>Compare rates</h3>
+            <p>PHP first. Flip to USD if that’s how you think.</p>
+          </div>
+          <div class="step">
+            <span class="n">03</span>
+            <h3>Book</h3>
+            <p>Pick the room. Continue through a partner. You land; you sleep.</p>
+          </div>
+        </div>
+        <p class="how-note">Rates come from hotel partners. We surface them in PHP or USD. You pick.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer nc-foot">
+    <div class="wrap">
+      <div>
+        <a class="nc-logo" href="index.html"><img class="nc-logo-img nc-logo-img-ink" src="https://kwarto-wm.vercel.app/kwarto-wordmark.png" alt="Kwarto" /></a>
+        <p>Support — hello@staytuloy.com</p>
+        <span class="tiny">Example data, not live rates.</span>
+      </div>
+      <p>Made for Filipinos who book the trip, then the room.</p>
+    </div>
+  </footer>
+  <script src="cal.js?v=hotels7"></script><script src="guests.js?v=hotels7"></script><script src="app.js?v=hotels7"></script>
+</body>
+</html>
