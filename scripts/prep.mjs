@@ -8,10 +8,10 @@ const need = ["index.html", "cebu.html", "hotel.html", "cal.js", "guests.js", "a
 
 function applyCacheBust(html) {
   return html
-    .replace(/styles\.css\?v=[^"'\s>]+/g, `styles.css?v=${cacheBust}`)
-    .replace(/cal\.js\?v=[^"'\s>]+/g, `cal.js?v=${cacheBust}`)
-    .replace(/guests\.js\?v=[^"'\s>]+/g, `guests.js?v=${cacheBust}`)
-    .replace(/app\.js\?v=[^"'\s>]+/g, `app.js?v=${cacheBust}`);
+    .replace(/\/?styles\.css\?v=[^"'\s>]+/g, `/styles.css?v=${cacheBust}`)
+    .replace(/\/?cal\.js\?v=[^"'\s>]+/g, `/cal.js?v=${cacheBust}`)
+    .replace(/\/?guests\.js\?v=[^"'\s>]+/g, `/guests.js?v=${cacheBust}`)
+    .replace(/\/?app\.js\?v=[^"'\s>]+/g, `/app.js?v=${cacheBust}`);
 }
 
 for (const name of need) {
@@ -50,7 +50,7 @@ if (index.includes('class="nc-nearby"')) {
   process.exit(1);
 }
 const cebu = readFileSync(join("public", "cebu.html"), "utf8");
-if (!index.includes(`styles.css?v=${cacheBust}`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
+if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
   console.error("prep abort: cache-bust or need 22 city dest-cards");
   process.exit(1);
 }
@@ -122,6 +122,10 @@ if (index.includes("v=search6")) {
 }
 if (index.includes("v=guest3") || index.includes("v=guest4")) {
   console.error("prep abort: cacheBust rewrote back to guest cache");
+  process.exit(1);
+}
+if (!index.includes('src="/cal.js?v=') || !index.includes('src="/guests.js?v=') || !index.includes('src="/app.js?v=')) {
+  console.error("prep abort: homepage scripts must be root-absolute");
   process.exit(1);
 }
 if (!index.includes("kwarto-wordmark.png") || !index.includes('id="typeahead"')) {
