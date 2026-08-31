@@ -11,29 +11,31 @@ npm run build
 
 ## Environment Variables
 
-To enable real hotel images and rates (instead of placeholder data), you need a Travel Payouts API token:
+To enable real hotel images and rates (instead of placeholder data), you need a RapidAPI key:
 
-### `TRAVELPAYOUTS_TOKEN`
+### `RAPIDAPI_KEY`
 
-1. Sign up at [Travel Payouts](https://www.travelpayouts.com/)
-2. Get your API token from: https://www.travelpayouts.com/programs/100/tools/api
-3. Set the environment variable:
+1. Sign up at [RapidAPI](https://rapidapi.com/)
+2. Subscribe to the Booking.com API: https://rapidapi.com/apidojo/api/booking
+3. Get your API key from the dashboard
+4. Set the environment variable:
 
 ```bash
 # Local development
-export TRAVELPAYOUTS_TOKEN=your_token_here
+export RAPIDAPI_KEY=your_key_here
 
 # Or in Vercel Dashboard: Settings > Environment Variables
 ```
 
 ### What the API provides
 
-With a valid `TRAVELPAYOUTS_TOKEN`, the site will:
-- Display **real hotel photos** from the Hotellook database
+With a valid `RAPIDAPI_KEY`, the site will:
+- Display **real hotel photos** from Booking.com
 - Show **live pricing** for the selected dates
+- Display **ratings and review counts**
 - Support PHP and USD currency conversion
 
-Without the token, the site falls back to placeholder Unsplash images and no prices.
+Without the key, the site falls back to placeholder Unsplash images and no prices.
 
 ## API Endpoints
 

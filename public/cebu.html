@@ -163,28 +163,35 @@
             var card = cards[i];
             if (!card) return;
             
-            if (hotel.mainPhoto) {
+            if (hotel.photo) {
               var img = card.querySelector("img");
               if (img) {
-                img.src = hotel.mainPhoto;
+                img.src = hotel.photo;
                 img.alt = hotel.name;
               }
             }
             
             var meta = card.querySelector(".meta");
-            if (meta && hotel.priceFrom) {
+            if (meta && hotel.priceUSD) {
               var existing = meta.querySelector(".hotel-price");
               if (existing) existing.remove();
               
               var priceEl = document.createElement("p");
               priceEl.className = "hotel-price";
-              priceEl.setAttribute("data-usd", hotel.priceFrom);
-              priceEl.textContent = "from " + formatPrice(hotel.priceFrom, currency());
+              priceEl.setAttribute("data-usd", hotel.priceUSD);
+              priceEl.textContent = "from " + formatPrice(hotel.priceUSD, currency());
               meta.appendChild(priceEl);
+              
+              if (hotel.rating) {
+                var ratingEl = document.createElement("span");
+                ratingEl.className = "hotel-rating";
+                ratingEl.textContent = " · ★ " + hotel.rating;
+                priceEl.appendChild(ratingEl);
+              }
             }
           });
         })
-        .catch(function() {});
+        .catch(function(e) { console.error("Hotel load error:", e); });
     }
     
     if (document.readyState === "loading") {
