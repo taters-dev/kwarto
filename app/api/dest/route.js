@@ -1,6 +1,16 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+// Hotel names come from Agoda GetUnifiedSuggestResult (already used for typeahead).
+// That endpoint has no skip/page and returns ~7 rows per query, so a city list is
+// built by asking for the city plus its areas and a few lodging words. This is not
+// a full inventory API — only what suggest returns, deduped. No prices.
+
+const SUGGEST_CAP = 8;
+const LODGING_WORDS = ["hotel", "hostel", "inn", "resort", "suites", "lodge", "stay"];
+const MAX_AREA_QUERIES = 8;
+const MAX_HOTEL_QUERIES = 14;
+
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : 0;
@@ -30,6 +40,11 @@ function labelOf(it) {
   return name || geo;
 }
 
+function cityNameOf(it) {
+  const dn = (it && it.DisplayNames) || {};
+  return String(dn.GeoHierarchyName || (it && it.CityName) || "").trim();
+}
+
 function mapItem(it) {
   if (!it) return null;
   const type = it.ObjectTypeId;
@@ -51,6 +66,8 @@ function mapItem(it) {
   if (city) dest.cityId = city;
   if (area) dest.areaId = area;
   if (hotel) dest.hotelId = hotel;
+  const cityName = cityNameOf(it);
+  if (cityName) dest.cityName = cityName;
   return dest;
 }
 
@@ -65,13 +82,12 @@ function listSuggest(data) {
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(row);
-    if (out.length >= 8) break;
+    if (out.length >= SUGGEST_CAP) break;
   }
   return out;
 }
 
-function listHotels(data, limit) {
-  const cap = limit || 12;
+function listHotels(data) {
   const items = Array.isArray(data && data.ViewModelList) ? data.ViewModelList : [];
   const out = [];
   const seen = new Set();
@@ -82,13 +98,26 @@ function listHotels(data, limit) {
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(row);
-    if (out.length >= cap) break;
   }
   return out;
 }
 
-function mergeHotels(base, extra, limit) {
-  const cap = limit || 12;
+function listAreas(data) {
+  const items = Array.isArray(data && data.ViewModelList) ? data.ViewModelList : [];
+  const out = [];
+  const seen = new Set();
+  for (const it of items) {
+    const row = mapItem(it);
+    if (!row || !row.areaId) continue;
+    const key = "a" + row.areaId;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(row);
+  }
+  return out;
+}
+
+function mergeHotels(base, extra) {
   const out = [];
   const seen = new Set();
   for (const row of (base || []).concat(extra || [])) {
@@ -97,9 +126,23 @@ function mergeHotels(base, extra, limit) {
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(row);
-    if (out.length >= cap) break;
   }
   return out;
+}
+
+function cityTitle(dest, q) {
+  if (dest && dest.kind === "city" && dest.label) return dest.label.split(",")[0].trim();
+  if (dest && dest.cityName) return dest.cityName.split(",")[0].trim();
+  if (dest && dest.label && dest.label.indexOf(",") !== -1) {
+    return dest.label.split(",").pop().trim();
+  }
+  return String(q || "").split(",")[0].trim();
+}
+
+function preferCity(hotels, cityId) {
+  if (!cityId) return hotels;
+  const inCity = (hotels || []).filter((h) => Number(h.cityId) === Number(cityId));
+  return inCity.length ? inCity : hotels;
 }
 
 async function fetchAgoda(q) {
@@ -116,6 +159,35 @@ async function fetchAgoda(q) {
   });
   if (!r.ok) return null;
   return r.json();
+}
+
+async function collectCityHotels(q, dest, firstData) {
+  let hotels = listHotels(firstData);
+  const areas = listAreas(firstData);
+  const title = cityTitle(dest, q);
+  const cityId = dest && dest.cityId;
+  const queries = [];
+  const seenQ = new Set([String(q || "").trim().toLowerCase()]);
+  function addQ(s) {
+    const t = String(s || "").trim();
+    if (!t) return;
+    const k = t.toLowerCase();
+    if (seenQ.has(k)) return;
+    seenQ.add(k);
+    queries.push(t);
+  }
+  for (const w of LODGING_WORDS) addQ(title + " " + w);
+  for (const a of areas.slice(0, MAX_AREA_QUERIES)) {
+    const an = String(a.label || "").split(",")[0].trim();
+    addQ(an + " hotel");
+  }
+  const extra = queries.slice(0, MAX_HOTEL_QUERIES);
+  const results = await Promise.all(extra.map((qq) => fetchAgoda(qq).catch(() => null)));
+  for (const data of results) {
+    if (!data) continue;
+    hotels = mergeHotels(hotels, listHotels(data));
+  }
+  return preferCity(hotels, cityId);
 }
 
 function pickDest(data, suggestions) {
@@ -138,28 +210,26 @@ export async function GET(request) {
   const req = new URL(request.url);
   const q = (req.searchParams.get("q") || "").trim();
   const wantHotels = req.searchParams.get("hotels") === "1";
+  const cityIdParam = num(req.searchParams.get("cityId"));
   if (q.length < 2) return Response.json({ dest: null, suggestions: [], hotels: [] });
   try {
     const data = await fetchAgoda(q);
     if (!data) return Response.json({ dest: null, suggestions: [], hotels: [] });
     const suggestions = listSuggest(data);
     const dest = pickDest(data, suggestions);
-    let hotels = listHotels(data);
-    if (wantHotels && hotels.length < 6) {
-      const hotelQ = /hotel/i.test(q) ? q : (q.split(",")[0] || q).trim() + " hotel";
-      if (hotelQ.toLowerCase() !== q.toLowerCase()) {
-        try {
-          const extra = await fetchAgoda(hotelQ);
-          hotels = mergeHotels(hotels, listHotels(extra));
-        } catch (e) {}
-      }
+    if (dest && cityIdParam && !dest.cityId) dest.cityId = cityIdParam;
+    let hotels;
+    if (wantHotels) {
+      hotels = await collectCityHotels(q, dest, data);
+    } else {
+      hotels = preferCity(listHotels(data), dest && dest.cityId);
     }
-    if (dest && dest.cityId) {
-      const cityId = Number(dest.cityId);
-      const inCity = hotels.filter((h) => Number(h.cityId) === cityId);
-      if (inCity.length) hotels = inCity;
-    }
-    return Response.json({ dest, suggestions, hotels });
+    return Response.json({
+      dest,
+      suggestions,
+      hotels,
+      source: "agoda-suggest"
+    });
   } catch (e) {
     return Response.json({ dest: null, suggestions: [], hotels: [] });
   }

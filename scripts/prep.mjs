@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels8";
+const cacheBust = "hotels9";
 const need = ["index.html", "cebu.html", "hotel.html", "results.html", "cal.js", "guests.js", "app.js", "styles.css"];
 
 function applyCacheBust(html) {
@@ -81,7 +81,7 @@ if (destHrefs.length !== 22 || homeCebu.length !== 1) {
   console.error("prep abort: need 1 Cebu local card among 22 dest-cards");
   process.exit(1);
 }
-if (index.includes("v=hotels2") || index.includes("v=hotels3") || index.includes("v=hotels4")) {
+if (index.includes("v=hotels2") || index.includes("v=hotels3") || index.includes("v=hotels4") || index.includes("v=hotels8")) {
   console.error("prep abort: cacheBust rewrote back to old hotels cache");
   process.exit(1);
 }
@@ -177,12 +177,12 @@ if (!cssOut.includes("#destinations .dest-grid") || !/#destinations \.dest-grid\
   console.error("prep abort: homepage dest rail carousel missing");
   process.exit(1);
 }
-if (!cebu.includes('class="hotel-list"') || cebu.includes('class="dest-grid"')) {
+if (!cebu.includes('class="hotel-list"') || !cebu.includes("data-results-list") || !cebu.includes("data-hotel-pager") || cebu.includes('class="dest-grid"')) {
   console.error("prep abort: cebu hotels must be hotel-list not dest-grid");
   process.exit(1);
 }
-if (!cssOut.includes(".hotel-list") || !/\.hotel-list\s*\{[^}]*grid-template-columns:\s*1fr/s.test(cssOut)) {
-  console.error("prep abort: hotel-list stacked CSS missing");
+if (!cssOut.includes(".hotel-list") || !/\.hotel-list\s*\{[^}]*grid-template-columns:\s*1fr/s.test(cssOut) || !cssOut.includes(".hotel-pager") || !cssOut.includes(".hotel-page-status")) {
+  console.error("prep abort: hotel-list stacked CSS or pager missing");
   process.exit(1);
 }
 if (/\.hotel-list\s*\{[^}]*overflow-x:\s*auto/s.test(cssOut)) {
@@ -226,12 +226,16 @@ if (!submitChunk || submitChunk.includes("window.open")) {
   console.error("prep abort: Find My Hotel must not open a partner tab");
   process.exit(1);
 }
-if (!appjs.includes("function fillResults") || !appjs.includes("function bindHotelCards") || !appjs.includes("data-results-list") || !appjs.includes("j.hotels") || !appjs.includes("CITY_HOTELS") || !appjs.includes("function curatedHotels")) {
-  console.error("prep abort: results hotel-list renderer missing");
+if (!appjs.includes("function fillResults") || !appjs.includes("function bindHotelCards") || !appjs.includes("data-results-list") || !appjs.includes("j.hotels") || !appjs.includes("HOTEL_PAGE_SIZE") || !appjs.includes("function paintHotelPage") || !appjs.includes("function bindHotelPager")) {
+  console.error("prep abort: results hotel-list renderer or pagination missing");
   process.exit(1);
 }
-if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count")) {
-  console.error("prep abort: results.html must be a Kwarto hotel list");
+if (appjs.includes("CITY_HOTELS") || appjs.includes("function curatedHotels")) {
+  console.error("prep abort: curated hotel-name lists must not drive results");
+  process.exit(1);
+}
+if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count") || !results.includes("data-hotel-pager") || !results.includes("data-page-next")) {
+  console.error("prep abort: results.html must be a Kwarto hotel list with pager");
   process.exit(1);
 }
 if (results.includes("data-usd") || results.includes("\u20b1") || results.includes("agoda.com") || results.includes('class="dest-grid"')) {
@@ -286,6 +290,19 @@ if (guests.includes("<select") || guests.includes("tagName !== \"SELECT\"") || g
 }
 if (!guests.includes("guest-age-list") || !guests.includes("Child ") || !guests.includes(" Age")) {
   console.error("prep abort: custom age list under the field missing");
+  process.exit(1);
+}
+const destRoute = existsSync("app/api/dest/route.js") ? readFileSync("app/api/dest/route.js", "utf8") : "";
+if (!destRoute.includes("GetUnifiedSuggestResult") || !destRoute.includes("function collectCityHotels") || !destRoute.includes("LODGING_WORDS") || !destRoute.includes("hostel")) {
+  console.error("prep abort: dest API must collect city hotels from Agoda suggest");
+  process.exit(1);
+}
+if (destRoute.includes("limit || 12") || destRoute.includes("out.length >= 12") || destRoute.includes("if (out.length >= cap)")) {
+  console.error("prep abort: dest hotel list is still hard-capped");
+  process.exit(1);
+}
+if (!destRoute.includes("SUGGEST_CAP") || !destRoute.includes("if (out.length >= SUGGEST_CAP)")) {
+  console.error("prep abort: typeahead suggestions must stay capped");
   process.exit(1);
 }
 console.log("prep ok", "cacheBust", cacheBust);

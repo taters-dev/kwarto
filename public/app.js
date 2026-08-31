@@ -35,61 +35,6 @@
     { keys: ["legazpi"], kind: "agoda", cityId: 23740, label: "Legazpi, Philippines" }
   ];
 
-  const CITY_HOTELS = {
-    manila: ["Okada Manila", "Shangri-La The Fort", "Sofitel Philippine Plaza", "Conrad Manila", "Solaire Resort", "The Manila Hotel", "Grand Hyatt Manila"],
-    boracay: ["Henann Palm Beach", "Crimson Boracay", "Discovery Shores", "The Lind Boracay", "Shangri-La Boracay", "Henann Lagoon"],
-    siargao: ["Nay Palad Hideaway", "Bravo Beach Resort", "Kalinaw Resort", "Club Tara Resort", "Kermit Surf Resort"],
-    bohol: ["Henann Resort Alona", "Amorita Resort", "South Palms Resort Panglao", "The Bellevue Resort", "Panglao Bluewater"],
-    "el nido": ["El Nido Garden Resort", "Lime Resort El Nido", "Seda Lio", "The Funny Lion El Nido", "Cauayan Island Resort"],
-    coron: ["Two Seasons Coron Island Resort", "Sunlight Guest Hotel", "Barefoot Coron", "Club Paradise Palawan"],
-    palawan: ["Astoria Palawan", "Sheridan Beach Resort", "Princesa Garden Island", "Hue Hotels Palawan"],
-    bangkok: ["Mandarin Oriental Bangkok", "Shangri-La Bangkok", "Lebua at State Tower", "Siam Kempinski", "The Sukhothai Bangkok"],
-    tokyo: ["Park Hyatt Tokyo", "The Peninsula Tokyo", "Mandarin Oriental Tokyo", "Shangri-La Tokyo", "Hotel Gracery Shinjuku"],
-    singapore: ["Marina Bay Sands", "Raffles Singapore", "The Fullerton Hotel", "Capella Singapore", "Marina Mandarin Singapore"],
-    seoul: ["Signiel Seoul", "Park Hyatt Seoul", "Lotte Hotel Seoul", "Grand Hyatt Seoul", "The Shilla Seoul"],
-    "hong kong": ["The Peninsula Hong Kong", "Mandarin Oriental Hong Kong", "Island Shangri-La", "Rosewood Hong Kong"],
-    taipei: ["Grand Hyatt Taipei", "W Taipei", "Mandarin Oriental Taipei", "Shangri-La Far Eastern Plaza"],
-    dubai: ["Burj Al Arab", "Atlantis The Palm", "Address Downtown", "Jumeirah Beach Hotel", "Armani Hotel Dubai"],
-    baguio: ["The Manor at Camp John Hay", "Baguio Country Club", "Hotel Elizabeth Baguio", "The Forest Lodge"],
-    davao: ["Seda Abreeza", "Marco Polo Davao", "Waterfront Insular Hotel", "Park Inn Davao"],
-    iloilo: ["Seda Atria", "Richmonde Hotel Iloilo", "Courtyard by Marriott Iloilo", "Smallville 21"],
-    dumaguete: ["Atmosphere Resort", "Bahura Resort and Spa", "Hotel Essencia", "Bethel Guest House"],
-    camiguin: ["Paras Beach Resort", "Secret Cove Beach Resort", "Camiguin Highland Resort"],
-    batanes: ["Fundacion Pacita", "Batanes Seaside Lodge", "Fundacion Casa Real"],
-    tagaytay: ["Taal Vista Hotel", "Crosswinds Tagaytay", "Nurture Spa Village", "Hotel Kimberly Tagaytay"],
-    clark: ["Hilton Clark Sun Valley", "Quest Hotel Clark", "Widus Hotel Clark", "Solaire Resort North"],
-    "puerto galera": ["Atlantis Dive Resort", "El Galleon Dive Resort", "Marco Vincent Dive Resort", "Infinity Resort"],
-    bacolod: ["Seda Capitol Central", "L'Fisher Hotel", "Park Inn Bacolod", "Sugarland Hotel"],
-    "cagayan de oro": ["Seda Centrio", "Limketkai Luxe Hotel", "Mallberry Suites", "N Hotel"],
-    cdo: ["Seda Centrio", "Limketkai Luxe Hotel", "Mallberry Suites"],
-    subic: ["Lighthouse Marina Resort", "Boardwalk Subic", "Camayan Beach Resort"],
-    vigan: ["Hotel Luna", "Grandpa's Inn", "Villa Angela Heritage House", "Hotel Felicidad"],
-    legazpi: ["The Oriental Legazpi", "Hotel St. Ellis", "Pepperland Hotel", "Hotel Venezia"]
-  };
-
-  function curatedHotels(place) {
-    const q = String(place || "").trim().toLowerCase();
-    if (!q) return [];
-    const out = [];
-    const seen = new Set();
-    for (const d of DEST) {
-      const hit = d.keys.some((k) => q.indexOf(k) !== -1) ||
-        (d.label && d.label.toLowerCase().indexOf(q.split(",")[0].trim()) !== -1);
-      if (!hit) continue;
-      for (const key of d.keys) {
-        const list = CITY_HOTELS[key];
-        if (!list) continue;
-        list.forEach((name) => {
-          const k = name.toLowerCase();
-          if (seen.has(k)) return;
-          seen.add(k);
-          out.push(name);
-        });
-      }
-    }
-    return out;
-  }
-
   const header = document.querySelector(".site-header");
   if (header) {
     const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
@@ -261,6 +206,7 @@
   function fetchSuggest(typed, signal, extra) {
     let url = "/api/dest?q=" + encodeURIComponent(typed);
     if (extra && extra.hotels) url += "&hotels=1";
+    if (extra && extra.cityId) url += "&cityId=" + encodeURIComponent(extra.cityId);
     return fetch(url, signal ? { signal: signal } : undefined)
       .then((r) => r.json())
       .then((j) => {
@@ -649,22 +595,28 @@
     return out;
   }
 
+  const HOTEL_PAGE_SIZE = 12;
+  let hotelNames = [];
+  let hotelPlace = "";
+  let hotelPage = 1;
+
   function renderHotelArticle(name) {
     const safe = escapeHtml(name);
+    const cityLine = hotelPlace
+      ? '<p class="why">' + escapeHtml(hotelPlace) + "</p>"
+      : "";
     return '<article class="dest-card" data-hotel-name="' + safe + '">' +
       '<img src="' + hotelPhoto(name) + '" alt="" />' +
       '<div class="meta">' +
       "<h3>" + safe + "</h3>" +
+      cityLine +
       '<div class="hotel-pills">' +
       '<a class="hotel-pill" data-provider="klook" data-hotel-name="' + safe + '" href="#">Klook</a>' +
       '<a class="hotel-pill" data-provider="kkday" data-hotel-name="' + safe + '" href="#">KKday</a>' +
       "</div></div></article>";
   }
 
-  function paintHotelNames(names) {
-    const list = document.querySelector("[data-results-list]") || document.querySelector(".hotel-list");
-    const countEl = document.querySelector("[data-hotel-count]");
-    if (!list) return;
+  function uniqueHotelNames(names) {
     const unique = [];
     const seen = new Set();
     (names || []).forEach((n) => {
@@ -674,22 +626,106 @@
       seen.add(key);
       unique.push(name);
     });
+    return unique;
+  }
+
+  function pageFromUrl() {
+    const n = Number(params.get("page"));
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
+  }
+
+  function setPageUrl(n) {
+    try {
+      const u = new URL(location.href);
+      if (n <= 1) u.searchParams.delete("page");
+      else u.searchParams.set("page", String(n));
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    } catch (e) {}
+  }
+
+  function paintHotelPage() {
+    const list = document.querySelector("[data-results-list]") || document.querySelector(".hotel-list");
+    const countEl = document.querySelector("[data-hotel-count]");
+    const pager = document.querySelector("[data-hotel-pager]");
+    const prev = document.querySelector("[data-page-prev]");
+    const next = document.querySelector("[data-page-next]");
+    const status = document.querySelector("[data-page-status]");
+    if (!list) return;
+    const unique = hotelNames;
     if (!unique.length) {
       list.innerHTML = '<p class="hotel-list-status">No hotels yet. Try another city, or tap Search.</p>';
       if (countEl) countEl.textContent = "0 hotels";
+      if (pager) pager.hidden = true;
       return;
     }
-    list.innerHTML = unique.map(renderHotelArticle).join("");
+    const pages = Math.max(1, Math.ceil(unique.length / HOTEL_PAGE_SIZE));
+    if (hotelPage > pages) hotelPage = pages;
+    if (hotelPage < 1) hotelPage = 1;
+    const start = (hotelPage - 1) * HOTEL_PAGE_SIZE;
+    const slice = unique.slice(start, start + HOTEL_PAGE_SIZE);
+    list.innerHTML = slice.map(renderHotelArticle).join("");
     if (countEl) countEl.textContent = unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    if (pager) pager.hidden = unique.length <= HOTEL_PAGE_SIZE;
+    if (status) {
+      const from = start + 1;
+      const to = start + slice.length;
+      status.textContent = from + "–" + to + " of " + unique.length;
+    }
+    if (prev) prev.disabled = hotelPage <= 1;
+    if (next) next.disabled = hotelPage >= pages;
+    setPageUrl(hotelPage);
     bindHotelPills();
     bindHotelCards();
+  }
+
+  function paintHotelNames(names) {
+    hotelNames = uniqueHotelNames(names);
+    hotelPage = pageFromUrl();
+    paintHotelPage();
+  }
+
+  function bindHotelPager() {
+    const prev = document.querySelector("[data-page-prev]");
+    const next = document.querySelector("[data-page-next]");
+    function go(delta) {
+      const pages = Math.max(1, Math.ceil(hotelNames.length / HOTEL_PAGE_SIZE));
+      const nextPage = hotelPage + delta;
+      if (nextPage < 1 || nextPage > pages) return;
+      hotelPage = nextPage;
+      paintHotelPage();
+      const list = document.querySelector("[data-results-list]");
+      if (list) list.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    if (prev && prev.getAttribute("data-bound-pager") !== "1") {
+      prev.setAttribute("data-bound-pager", "1");
+      prev.addEventListener("click", () => go(-1));
+    }
+    if (next && next.getAttribute("data-bound-pager") !== "1") {
+      next.setAttribute("data-bound-pager", "1");
+      next.addEventListener("click", () => go(1));
+    }
+  }
+
+  function localCityId(place) {
+    const q = String(place || "").trim().toLowerCase();
+    if (!q) return 0;
+    for (const d of DEST) {
+      if (d.keys.some((k) => q.indexOf(k) !== -1)) return d.cityId || 0;
+    }
+    return 0;
+  }
+
+  function isCebuPage() {
+    return /cebu\.html?$/i.test(location.pathname) || /(^|\/)cebu\/?$/i.test(location.pathname);
   }
 
   function fillResults() {
     const list = document.querySelector("[data-results-list]");
     if (!list) return;
-    const place = (params.get("hotel") || params.get("city") || "").trim();
+    bindHotelPager();
+    const place = (params.get("hotel") || params.get("city") || (isCebuPage() ? "Cebu, Philippines" : "")).trim();
     const short = place.split(",")[0].trim() || place || "Hotels";
+    hotelPlace = short;
     const crumb = document.querySelector("[data-results-place]");
     const heading = document.querySelector("[data-results-heading]");
     if (crumb) crumb.textContent = short;
@@ -704,25 +740,27 @@
       paintHotelNames([]);
       return;
     }
-    fetchSuggest(q, null, { hotels: true })
+    if (!list.querySelector(".dest-card")) {
+      list.innerHTML = '<p class="hotel-list-status">Finding hotels…</p>';
+    }
+    const extra = { hotels: true };
+    const cityId = localCityId(place);
+    if (cityId) extra.cityId = cityId;
+    fetchSuggest(q, null, extra)
       .then((j) => {
         const names = [];
         if (pickedHotel) names.push(pickedHotel.split(",")[0].trim() || pickedHotel);
-        curatedHotels(place).forEach((n) => names.push(n));
         const cityId = j && j.dest && j.dest.cityId;
         hotelsFrom(j).forEach((h) => {
           if (cityId && h.cityId && Number(h.cityId) !== Number(cityId)) return;
           const n = displayHotelName(h);
           if (n) names.push(n);
         });
-        if (!names.length && place) names.push(place);
         paintHotelNames(names);
       })
       .catch(() => {
         const names = [];
-        if (pickedHotel) names.push(pickedHotel);
-        curatedHotels(place).forEach((n) => names.push(n));
-        if (!names.length && place) names.push(place);
+        if (pickedHotel) names.push(pickedHotel.split(",")[0].trim() || pickedHotel);
         paintHotelNames(names);
       });
   }

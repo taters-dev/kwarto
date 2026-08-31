@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Red+Hat+Display:ital,wght@0,700;1,700;1,800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=hotels8" />
+  <link rel="stylesheet" href="/styles.css?v=hotels9" />
 </head>
 <body class="nc">
   <a class="skip" href="#main">Skip to content</a>
@@ -38,7 +38,7 @@
           <input id="children" name="children" type="hidden" value="0" />
           <input id="childages" name="childages" type="hidden" value="" />
           <button type="button" class="date-trigger" aria-haspopup="dialog" aria-controls="cal-root">Sep 12 – Sep 15</button>
-          · 8 hotels
+          · <span data-hotel-count>Finding hotels</span>
         </p>
       </header>
     </div>
@@ -46,10 +46,10 @@
     <section class="section nc-trips" id="hotels">
       <div class="wrap">
         <div class="section-head">
-          <h2>Hotels in Cebu</h2>
-          <p>Eight places. Two partners. No prices here — tap through.</p>
+          <h2 data-results-heading>Hotels in Cebu</h2>
+          <p>Stay on Kwarto to pick a hotel. Two partners. No prices here — tap through.</p>
         </div>
-        <div class="hotel-list">
+        <div class="hotel-list" data-results-list>
 <article class="dest-card">
             <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Mactan water in the morning" />
             <div class="meta">
@@ -131,6 +131,11 @@
             </div>
           </article>
         </div>
+        <nav class="hotel-pager" data-hotel-pager hidden aria-label="Hotel pages">
+          <button type="button" data-page-prev>Previous</button>
+          <span class="hotel-page-status" data-page-status></span>
+          <button type="button" data-page-next>Next</button>
+        </nav>
       </div>
     </section>
 
@@ -164,6 +169,6 @@
     });
   })();
   </script>
-  <script src="/cal.js?v=hotels8"></script><script src="/guests.js?v=hotels8"></script><script src="/app.js?v=hotels8"></script>
+  <script src="/cal.js?v=hotels9"></script><script src="/guests.js?v=hotels9"></script><script src="/app.js?v=hotels9"></script>
 </body>
 </html>
