@@ -928,17 +928,23 @@ body.nc { background: #F9F9FF; color: var(--ink); }
 .nc-red-blob { display: none; }
 .nc-sun {
   position: absolute;
-  width: 240px;
-  height: 240px;
-  right: 16%;
-  top: 10%;
+  width: 280px;
+  height: 280px;
+  right: 14%;
+  top: 6%;
   z-index: 1;
-  background: #FCD116;
+  background: repeating-conic-gradient(#FCD116 0deg 14deg, transparent 14deg 45deg);
   border-radius: 50%;
-  box-shadow: 0 0 0 18px rgba(252, 209, 22, 0.22);
+  filter: drop-shadow(0 0 18px rgba(252,209,22,0.55));
   pointer-events: none;
 }
-.nc-sun::after { display: none; }
+.nc-sun::after {
+  content: "";
+  position: absolute;
+  inset: 30%;
+  background: #FCD116;
+  border-radius: 50%;
+}
 .nc-mascot img {
   position: relative;
   z-index: 2;
@@ -947,7 +953,7 @@ body.nc { background: #F9F9FF; color: var(--ink); }
   height: auto;
   object-fit: contain;
   object-position: right center;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.16));
+  filter: drop-shadow(0 16px 24px rgba(0,0,0,0.22));
 }
 .nc-leaf-loose {
   position: absolute;
@@ -955,19 +961,17 @@ body.nc { background: #F9F9FF; color: var(--ink); }
   z-index: 3;
 }
 .nc-leaf-tl {
-  left: -70px;
-  top: -36px;
-  width: 240px;
-  transform: rotate(-18deg);
-  opacity: 0.92;
+  left: -90px;
+  top: -50px;
+  width: 300px;
+  transform: rotate(-22deg);
 }
 .nc-leaf-br {
-  right: -54px;
-  bottom: 80px;
-  width: 200px;
-  transform: rotate(24deg) scaleX(-1);
+  right: -70px;
+  bottom: 70px;
+  width: 260px;
+  transform: rotate(28deg) scaleX(-1);
   z-index: 3;
-  opacity: 0.88;
 }
 
 .nc-search-wrap { padding-bottom: 8px; position: relative; z-index: 6; }
