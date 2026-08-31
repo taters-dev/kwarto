@@ -104,14 +104,31 @@ export async function GET(request) {
     }, { status: 503 });
   }
   
-  const results = [];
+  // Step 1: Find all hotels in parallel
+  const hotelSearches = await Promise.all(
+    CEBU_HOTELS.map(target => findHotel(target.search).then(found => ({ target, found })))
+  );
   
-  for (const target of CEBU_HOTELS) {
-    const found = await findHotel(target.search);
+  // Step 2: Get room prices in parallel for found hotels
+  const foundHotels = hotelSearches.filter(h => h.found);
+  const roomSearches = await Promise.all(
+    foundHotels.map(h => 
+      getHotelRooms(h.found.dest_id, checkIn, checkOut).then(rooms => ({ ...h, rooms }))
+    )
+  );
+  
+  // Build lookup map for results
+  const roomMap = new Map();
+  for (const r of roomSearches) {
+    roomMap.set(r.target.name, r);
+  }
+  
+  // Step 3: Build results in original order
+  const results = CEBU_HOTELS.map(target => {
+    const data = roomMap.get(target.name);
     
-    if (found) {
-      const hotelId = found.dest_id;
-      const rooms = await getHotelRooms(hotelId, checkIn, checkOut);
+    if (data && data.found) {
+      const { found, rooms } = data;
       
       let minPrice = null;
       let currency_code = "USD";
@@ -128,8 +145,8 @@ export async function GET(request) {
       
       const priceUSD = minPrice ? (currency_code === "USD" ? minPrice : Math.round(minPrice / 57)) : null;
       
-      results.push({
-        id: hotelId,
+      return {
+        id: found.dest_id,
         name: target.name,
         fullName: found.name || found.label,
         stars: found.class || 5,
@@ -140,23 +157,23 @@ export async function GET(request) {
         pricePHP: priceUSD ? Math.round(priceUSD * 57) : null,
         city: found.city_name || "Cebu",
         region: found.region || "Visayas"
-      });
-    } else {
-      results.push({
-        id: null,
-        name: target.name,
-        fullName: target.name,
-        stars: 5,
-        rating: null,
-        photo: null,
-        photoLarge: null,
-        priceUSD: null,
-        pricePHP: null,
-        city: "Cebu",
-        region: "Visayas"
-      });
+      };
     }
-  }
+    
+    return {
+      id: null,
+      name: target.name,
+      fullName: target.name,
+      stars: 5,
+      rating: null,
+      photo: null,
+      photoLarge: null,
+      priceUSD: null,
+      pricePHP: null,
+      city: "Cebu",
+      region: "Visayas"
+    };
+  });
   
   return Response.json({
     checkIn,
