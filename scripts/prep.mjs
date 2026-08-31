@@ -226,7 +226,7 @@ if (!submitChunk || submitChunk.includes("window.open")) {
   console.error("prep abort: Find My Hotel must not open a partner tab");
   process.exit(1);
 }
-if (!appjs.includes("function fillResults") || !appjs.includes("function bindHotelCards") || !appjs.includes("data-results-list") || !appjs.includes("j.hotels")) {
+if (!appjs.includes("function fillResults") || !appjs.includes("function bindHotelCards") || !appjs.includes("data-results-list") || !appjs.includes("j.hotels") || !appjs.includes("CITY_HOTELS") || !appjs.includes("function curatedHotels")) {
   console.error("prep abort: results hotel-list renderer missing");
   process.exit(1);
 }

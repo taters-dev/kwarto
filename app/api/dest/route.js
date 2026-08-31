@@ -143,6 +143,7 @@ export async function GET(request) {
     const data = await fetchAgoda(q);
     if (!data) return Response.json({ dest: null, suggestions: [], hotels: [] });
     const suggestions = listSuggest(data);
+    const dest = pickDest(data, suggestions);
     let hotels = listHotels(data);
     if (wantHotels && hotels.length < 6) {
       const hotelQ = /hotel/i.test(q) ? q : (q.split(",")[0] || q).trim() + " hotel";
@@ -153,7 +154,12 @@ export async function GET(request) {
         } catch (e) {}
       }
     }
-    return Response.json({ dest: pickDest(data, suggestions), suggestions, hotels });
+    if (dest && dest.cityId) {
+      const cityId = Number(dest.cityId);
+      const inCity = hotels.filter((h) => Number(h.cityId) === cityId);
+      if (inCity.length) hotels = inCity;
+    }
+    return Response.json({ dest, suggestions, hotels });
   } catch (e) {
     return Response.json({ dest: null, suggestions: [], hotels: [] });
   }
