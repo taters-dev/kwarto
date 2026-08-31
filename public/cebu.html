@@ -47,7 +47,7 @@
       <div class="wrap">
         <div class="section-head">
           <h2 data-results-heading>Hotels in Cebu</h2>
-          <p>Stay on Kwarto to pick a hotel. Hotel cards appear when a Klook feed is connected. Tap a hotel to book on Klook.</p>
+          <p>Tap a hotel to book on Klook.</p>
         </div>
         <div class="hotel-list" data-results-list>
           <p class="hotel-list-status">Finding hotels…</p>
@@ -74,7 +74,7 @@
       <div>
         <a class="nc-logo" href="index.html"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
         <p>Support — hello@staytuloy.com</p>
-        <span class="tiny">No live rates until a partner hotel feed is connected.</span>
+        <span class="tiny">Live rates from Booking.com. Book through Klook.</span>
       </div>
       <p>Made for Filipinos who book the trip, then the room.</p>
     </div>
@@ -86,6 +86,118 @@
       var el = document.getElementById(id);
       var v = p.get(id);
       if (el && v) el.value = v;
+    });
+    
+    var RATE = 57;
+    var currency = function() {
+      return document.documentElement.dataset.cur || "PHP";
+    };
+    
+    function formatPrice(usd, cur) {
+      if (!usd) return null;
+      if (cur === "USD") return "$" + Math.round(usd).toLocaleString("en-US");
+      return "₱" + Math.round(usd * RATE).toLocaleString("en-PH");
+    }
+    
+    function createHotelCard(hotel) {
+      var a = document.createElement("a");
+      a.className = "dest-card";
+      a.href = "#";
+      a.setAttribute("data-hotel-name", hotel.name);
+      
+      var img = document.createElement("img");
+      img.src = hotel.photo || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
+      img.alt = hotel.name;
+      a.appendChild(img);
+      
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      
+      var h3 = document.createElement("h3");
+      h3.textContent = hotel.name;
+      meta.appendChild(h3);
+      
+      if (hotel.priceUSD) {
+        var price = document.createElement("p");
+        price.className = "hotel-price";
+        price.setAttribute("data-usd", hotel.priceUSD);
+        price.textContent = "from " + formatPrice(hotel.priceUSD, currency());
+        if (hotel.rating) {
+          price.textContent += " · ★ " + hotel.rating;
+        }
+        meta.appendChild(price);
+      }
+      
+      a.appendChild(meta);
+      return a;
+    }
+    
+    function loadHotels() {
+      var checkIn = document.getElementById("checkin");
+      var checkOut = document.getElementById("checkout");
+      var ci = checkIn ? checkIn.value : "";
+      var co = checkOut ? checkOut.value : "";
+      
+      var url = "/api/hotels?location=cebu";
+      if (ci) url += "&checkIn=" + encodeURIComponent(ci);
+      if (co) url += "&checkOut=" + encodeURIComponent(co);
+      url += "&currency=USD";
+      
+      var list = document.querySelector("[data-results-list]");
+      var countEl = document.querySelector("[data-hotel-count]");
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!list) return;
+          
+          if (data.error) {
+            list.innerHTML = '<p class="hotel-list-status">Hotel feed not configured yet.</p>';
+            if (countEl) countEl.textContent = "No hotels";
+            return;
+          }
+          
+          if (!data.hotels || !data.hotels.length) {
+            list.innerHTML = '<p class="hotel-list-status">No hotels found.</p>';
+            if (countEl) countEl.textContent = "0 hotels";
+            return;
+          }
+          
+          list.innerHTML = "";
+          var validHotels = data.hotels.filter(function(h) { return h.id && h.photo; });
+          
+          validHotels.forEach(function(hotel) {
+            list.appendChild(createHotelCard(hotel));
+          });
+          
+          if (countEl) countEl.textContent = validHotels.length + " hotels";
+        })
+        .catch(function(e) {
+          console.error("Hotel load error:", e);
+          if (list) list.innerHTML = '<p class="hotel-list-status">Could not load hotels.</p>';
+          if (countEl) countEl.textContent = "Error";
+        });
+    }
+    
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", loadHotels);
+    } else {
+      setTimeout(loadHotels, 100);
+    }
+    
+    document.querySelectorAll("[data-cur]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        setTimeout(function() {
+          document.querySelectorAll(".hotel-price[data-usd]").forEach(function(el) {
+            var usd = Number(el.getAttribute("data-usd"));
+            if (usd) {
+              var rating = el.textContent.match(/★ [\d.]+/);
+              el.textContent = "from " + formatPrice(usd, currency());
+              if (rating) el.textContent += " · " + rating[0];
+            }
+          });
+        }, 50);
+      });
     });
   })();
   </script>

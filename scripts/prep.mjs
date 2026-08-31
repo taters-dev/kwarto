@@ -330,8 +330,14 @@ if (!destRoute.includes("SUGGEST_CAP") || !destRoute.includes("if (out.length >=
   process.exit(1);
 }
 const hotelsRoute = existsSync("app/api/hotels/route.js") ? readFileSync("app/api/hotels/route.js", "utf8") : "";
-if (!hotelsRoute.includes("hotels: []") || !hotelsRoute.includes("source: \"none\"") || hotelsRoute.includes("GetUnifiedSuggestResult") || hotelsRoute.includes("agoda.com")) {
-  console.error("prep abort: /api/hotels must be an empty partner stub, not Agoda");
+const isEmptyStub = hotelsRoute.includes("hotels: []") && hotelsRoute.includes("source: \"none\"");
+const isRapidAPI = hotelsRoute.includes("RAPIDAPI_KEY") && hotelsRoute.includes("rapidapi.com");
+if (!isEmptyStub && !isRapidAPI) {
+  console.error("prep abort: /api/hotels must be an empty partner stub or RapidAPI integration");
+  process.exit(1);
+}
+if (hotelsRoute.includes("GetUnifiedSuggestResult") || hotelsRoute.includes("agoda.com")) {
+  console.error("prep abort: /api/hotels must not use Agoda");
   process.exit(1);
 }
 if (appjs.includes("/api/dest?q=") && appjs.includes("extra.hotels") && appjs.includes("fetchSuggest(q, null, extra)")) {
