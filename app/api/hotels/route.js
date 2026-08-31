@@ -4,27 +4,46 @@ export const runtime = "nodejs";
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 const RAPIDAPI_HOST = "apidojo-booking-v1.p.rapidapi.com";
 
-const CEBU_DEST_ID = "-2421883";
-const MACTAN_DEST_ID = "900062776";
-
 function formatDate(d) {
   return d.toISOString().split("T")[0];
 }
 
-function upgradeImageUrl(url, size = "max500") {
-  if (!url) return null;
-  return url
-    .replace(/\/square\d+\//, `/${size}/`)
-    .replace(/\/max\d+x\d+\//, `/${size}/`)
-    .replace(/\/150x150\//, `/${size}/`);
+async function findDestination(query) {
+  if (!RAPIDAPI_KEY || !query) return null;
+  
+  const params = new URLSearchParams({
+    text: query,
+    languagecode: "en-us"
+  });
+  
+  const url = `https://${RAPIDAPI_HOST}/locations/auto-complete?${params.toString()}`;
+  
+  try {
+    const r = await fetch(url, {
+      headers: {
+        "x-rapidapi-host": RAPIDAPI_HOST,
+        "x-rapidapi-key": RAPIDAPI_KEY
+      },
+      cache: "no-store"
+    });
+    
+    if (!r.ok) return null;
+    const data = await r.json();
+    
+    const city = data.find(item => item.dest_type === "city");
+    return city || data[0] || null;
+  } catch (e) {
+    console.error("Destination search error:", e);
+    return null;
+  }
 }
 
-async function searchHotels(destId, checkIn, checkOut, page = 0) {
+async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
   if (!RAPIDAPI_KEY) return null;
   
   const params = new URLSearchParams({
     dest_ids: destId,
-    dest_type: "city",
+    dest_type: destType || "city",
     arrival_date: checkIn,
     departure_date: checkOut,
     room_qty: "1",
@@ -60,7 +79,7 @@ export async function GET(request) {
   const checkOut = params.get("checkOut") || formatDate(new Date(Date.now() + 10 * 24 * 60 * 60 * 1000));
   const currency = (params.get("currency") || "USD").toUpperCase();
   const page = parseInt(params.get("page") || "0", 10);
-  const area = params.get("area") || "cebu";
+  const city = params.get("city") || "Cebu";
   
   if (!RAPIDAPI_KEY) {
     return Response.json({
@@ -70,14 +89,28 @@ export async function GET(request) {
     }, { status: 503 });
   }
   
-  const destId = area === "mactan" ? MACTAN_DEST_ID : CEBU_DEST_ID;
-  const data = await searchHotels(destId, checkIn, checkOut, page);
+  const destination = await findDestination(city);
+  
+  if (!destination) {
+    return Response.json({
+      checkIn,
+      checkOut,
+      currency,
+      city,
+      hotels: [],
+      hasKey: !!RAPIDAPI_KEY,
+      error: "City not found"
+    });
+  }
+  
+  const data = await searchHotels(destination.dest_id, destination.dest_type, checkIn, checkOut, page);
   
   if (!data || !data.result) {
     return Response.json({
       checkIn,
       checkOut,
       currency,
+      city: destination.city_name || city,
       hotels: [],
       hasKey: !!RAPIDAPI_KEY,
       error: "Failed to fetch hotels"
@@ -97,6 +130,9 @@ export async function GET(request) {
         priceUSD = Math.round(priceBreakdown.gross_amount.value / 3);
       }
       
+      const photoUrl = hotel.main_photo_url || null;
+      const photo = photoUrl ? photoUrl.replace('/square60/', '/max300/') : null;
+      
       return {
         id: hotel.hotel_id,
         name: hotel.hotel_name_trans || hotel.hotel_name,
@@ -104,11 +140,10 @@ export async function GET(request) {
         stars: hotel.class || 0,
         rating: hotel.review_score || null,
         reviewCount: hotel.review_nr || 0,
-        photo: upgradeImageUrl(hotel.main_photo_url, "square200"),
-        photoLarge: upgradeImageUrl(hotel.main_photo_url, "max500"),
+        photo: photo,
         priceUSD: priceUSD,
         pricePHP: priceUSD ? Math.round(priceUSD * 57) : null,
-        city: hotel.city_in_trans?.replace("in ", "") || "Cebu",
+        city: hotel.city_in_trans?.replace("in ", "") || destination.city_name || city,
         district: hotel.distances?.[0]?.text || null,
         hasFreeCancellation: hotel.is_free_cancellable === 1,
         hasFreeParking: hotel.has_free_parking === 1,
@@ -120,6 +155,7 @@ export async function GET(request) {
     checkIn,
     checkOut,
     currency,
+    city: destination.city_name || city,
     page,
     totalCount: data.primary_count || results.length,
     hotels: results,

@@ -141,7 +141,7 @@
       var ci = checkIn ? checkIn.value : "";
       var co = checkOut ? checkOut.value : "";
       
-      var url = "/api/hotels?location=cebu";
+      var url = "/api/hotels?city=Cebu";
       if (ci) url += "&checkIn=" + encodeURIComponent(ci);
       if (co) url += "&checkOut=" + encodeURIComponent(co);
       url += "&currency=USD";
