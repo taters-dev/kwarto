@@ -1,6 +1,12 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+// Typeahead only. Agoda GetUnifiedSuggestResult resolves a city/area/hotel
+// label and ids for search. It is not a Kwarto hotel inventory feed — Agoda is
+// not a provider. Hotel lists come from /api/hotels (Klook when wired).
+
+const SUGGEST_CAP = 8;
+
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : 0;
@@ -30,6 +36,11 @@ function labelOf(it) {
   return name || geo;
 }
 
+function cityNameOf(it) {
+  const dn = (it && it.DisplayNames) || {};
+  return String(dn.GeoHierarchyName || (it && it.CityName) || "").trim();
+}
+
 function mapItem(it) {
   if (!it) return null;
   const type = it.ObjectTypeId;
@@ -51,6 +62,8 @@ function mapItem(it) {
   if (city) dest.cityId = city;
   if (area) dest.areaId = area;
   if (hotel) dest.hotelId = hotel;
+  const cityName = cityNameOf(it);
+  if (cityName) dest.cityName = cityName;
   return dest;
 }
 
@@ -65,7 +78,7 @@ function listSuggest(data) {
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(row);
-    if (out.length >= 8) break;
+    if (out.length >= SUGGEST_CAP) break;
   }
   return out;
 }
@@ -86,26 +99,38 @@ function pickDest(data, suggestions) {
   return mapItem(chosen && chosen.it);
 }
 
-export async function GET(request) {
-  const q = (new URL(request.url).searchParams.get("q") || "").trim();
-  if (q.length < 2) return Response.json({ dest: null, suggestions: [] });
+async function fetchAgoda(q) {
   const url = "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/?" +
     new URLSearchParams({ searchText: q, origin: "US", cid: "-1", pageTypeId: "1" }).toString();
+  const r = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+      Referer: "https://www.agoda.com/",
+      Origin: "https://www.agoda.com"
+    },
+    cache: "no-store"
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+export async function GET(request) {
+  const req = new URL(request.url);
+  const q = (req.searchParams.get("q") || "").trim();
+  if (q.length < 2) return Response.json({ dest: null, suggestions: [], hotels: [] });
   try {
-    const r = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-        Referer: "https://www.agoda.com/",
-        Origin: "https://www.agoda.com"
-      },
-      cache: "no-store"
-    });
-    if (!r.ok) return Response.json({ dest: null, suggestions: [] });
-    const data = await r.json();
+    const data = await fetchAgoda(q);
+    if (!data) return Response.json({ dest: null, suggestions: [], hotels: [] });
     const suggestions = listSuggest(data);
-    return Response.json({ dest: pickDest(data, suggestions), suggestions });
+    const dest = pickDest(data, suggestions);
+    return Response.json({
+      dest,
+      suggestions,
+      hotels: [],
+      source: "agoda-suggest-typeahead"
+    });
   } catch (e) {
-    return Response.json({ dest: null, suggestions: [] });
+    return Response.json({ dest: null, suggestions: [], hotels: [] });
   }
 }

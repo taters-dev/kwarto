@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Red+Hat+Display:ital,wght@0,700;1,700;1,800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css?v=hotels10" />
 </head>
-<body class="nc">
+<body class="nc" data-city-page>
   <a class="skip" href="#main">Skip to content</a>
   <header class="nc-top">
     <div class="wrap nc-top-inner">
@@ -29,7 +29,7 @@
   <main id="main">
     <div class="wrap nc-search-wrap">
       <header class="page-head">
-        <p class="crumb"><a href="index.html">Home</a> · Philippines</p>
+        <p class="crumb"><a href="index.html">Home</a> · <span data-results-place>Philippines</span></p>
         <h1>Cebu</h1>
         <p class="sub">
           <input id="checkin" name="checkin" type="hidden" value="2026-09-12" />
@@ -38,7 +38,7 @@
           <input id="children" name="children" type="hidden" value="0" />
           <input id="childages" name="childages" type="hidden" value="" />
           <button type="button" class="date-trigger" aria-haspopup="dialog" aria-controls="cal-root">Sep 12 – Sep 15</button>
-          · 8 hotels
+          · <span data-hotel-count>Finding hotels</span>
         </p>
       </header>
     </div>
@@ -46,68 +46,25 @@
     <section class="section nc-trips" id="hotels">
       <div class="wrap">
         <div class="section-head">
-          <h2>Hotels in Cebu</h2>
-          <p>Eight places. Tap a hotel to book on Klook.</p>
+          <h2 data-results-heading>Hotels in Cebu</h2>
+          <p>Tap a hotel to book on Klook.</p>
         </div>
-        <div class="hotel-list">
-          <a class="dest-card" href="#" data-hotel-name="Shangri-La Mactan">
-            <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Mactan water in the morning" />
-            <div class="meta">
-              <h3>Shangri-La Mactan</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="Crimson Mactan">
-            <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Resort pool at dusk" />
-            <div class="meta">
-              <h3>Crimson Mactan</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="Dusit Thani Mactan">
-            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Pool terrace overlooking the water" />
-            <div class="meta">
-              <h3>Dusit Thani Mactan</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="JPark Island">
-            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Resort pool and palms" />
-            <div class="meta">
-              <h3>JPark Island</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="Mövenpick Mactan">
-            <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Beachfront resort at sunset" />
-            <div class="meta">
-              <h3>Mövenpick Mactan</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="Bluewater Maribago">
-            <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Infinity pool looking toward the sea" />
-            <div class="meta">
-              <h3>Bluewater Maribago</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="Radisson Blu Cebu">
-            <img src="https://images.unsplash.com/photo-1551882547-ff40c63ea5b5?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="City hotel exterior" />
-            <div class="meta">
-              <h3>Radisson Blu Cebu</h3>
-            </div>
-          </a>
-          <a class="dest-card" href="#" data-hotel-name="Marco Polo Plaza">
-            <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Hillside hotel with city views" />
-            <div class="meta">
-              <h3>Marco Polo Plaza</h3>
-            </div>
-          </a>
+        <div class="hotel-list" data-results-list>
+          <p class="hotel-list-status">Finding hotels…</p>
         </div>
+        <nav class="hotel-pager" data-hotel-pager hidden aria-label="Hotel pages">
+          <button type="button" data-page-prev>Previous</button>
+          <span class="hotel-page-status" data-page-status></span>
+          <button type="button" data-page-next>Next</button>
+        </nav>
       </div>
     </section>
 
     <section class="nc-stats">
       <div class="wrap nc-stats-grid">
         <div><b>PHP</b><span>first. USD if you want it</span></div>
-        <div><b>Cebu</b><span>is live first</span></div>
-        <div><b>Partner</b><span>checkout, not ours</span>
-        </div>
+        <div><b>Cebu</b><span>is a city page like the rest</span></div>
+        <div><b>Partner</b><span>checkout, not ours</span></div>
       </div>
     </section>
   </main>
@@ -117,7 +74,7 @@
       <div>
         <a class="nc-logo" href="index.html"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
         <p>Support — hello@staytuloy.com</p>
-        <span class="tiny">Example data, not live rates.</span>
+        <span class="tiny">Live rates from Booking.com. Book through Klook.</span>
       </div>
       <p>Made for Filipinos who book the trip, then the room.</p>
     </div>
@@ -142,6 +99,39 @@
       return "₱" + Math.round(usd * RATE).toLocaleString("en-PH");
     }
     
+    function createHotelCard(hotel) {
+      var a = document.createElement("a");
+      a.className = "dest-card";
+      a.href = "#";
+      a.setAttribute("data-hotel-name", hotel.name);
+      
+      var img = document.createElement("img");
+      img.src = hotel.photo || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
+      img.alt = hotel.name;
+      a.appendChild(img);
+      
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      
+      var h3 = document.createElement("h3");
+      h3.textContent = hotel.name;
+      meta.appendChild(h3);
+      
+      if (hotel.priceUSD) {
+        var price = document.createElement("p");
+        price.className = "hotel-price";
+        price.setAttribute("data-usd", hotel.priceUSD);
+        price.textContent = "from " + formatPrice(hotel.priceUSD, currency());
+        if (hotel.rating) {
+          price.textContent += " · ★ " + hotel.rating;
+        }
+        meta.appendChild(price);
+      }
+      
+      a.appendChild(meta);
+      return a;
+    }
+    
     function loadHotels() {
       var checkIn = document.getElementById("checkin");
       var checkOut = document.getElementById("checkout");
@@ -153,45 +143,40 @@
       if (co) url += "&checkOut=" + encodeURIComponent(co);
       url += "&currency=USD";
       
+      var list = document.querySelector("[data-results-list]");
+      var countEl = document.querySelector("[data-hotel-count]");
+      
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (!data.hotels || !data.hotels.length) return;
+          if (!list) return;
           
-          var cards = document.querySelectorAll(".hotel-list .dest-card");
-          data.hotels.forEach(function(hotel, i) {
-            var card = cards[i];
-            if (!card) return;
-            
-            if (hotel.photo) {
-              var img = card.querySelector("img");
-              if (img) {
-                img.src = hotel.photo;
-                img.alt = hotel.name;
-              }
-            }
-            
-            var meta = card.querySelector(".meta");
-            if (meta && hotel.priceUSD) {
-              var existing = meta.querySelector(".hotel-price");
-              if (existing) existing.remove();
-              
-              var priceEl = document.createElement("p");
-              priceEl.className = "hotel-price";
-              priceEl.setAttribute("data-usd", hotel.priceUSD);
-              priceEl.textContent = "from " + formatPrice(hotel.priceUSD, currency());
-              meta.appendChild(priceEl);
-              
-              if (hotel.rating) {
-                var ratingEl = document.createElement("span");
-                ratingEl.className = "hotel-rating";
-                ratingEl.textContent = " · ★ " + hotel.rating;
-                priceEl.appendChild(ratingEl);
-              }
-            }
+          if (data.error) {
+            list.innerHTML = '<p class="hotel-list-status">Hotel feed not configured yet.</p>';
+            if (countEl) countEl.textContent = "No hotels";
+            return;
+          }
+          
+          if (!data.hotels || !data.hotels.length) {
+            list.innerHTML = '<p class="hotel-list-status">No hotels found.</p>';
+            if (countEl) countEl.textContent = "0 hotels";
+            return;
+          }
+          
+          list.innerHTML = "";
+          var validHotels = data.hotels.filter(function(h) { return h.id && h.photo; });
+          
+          validHotels.forEach(function(hotel) {
+            list.appendChild(createHotelCard(hotel));
           });
+          
+          if (countEl) countEl.textContent = validHotels.length + " hotels";
         })
-        .catch(function(e) { console.error("Hotel load error:", e); });
+        .catch(function(e) {
+          console.error("Hotel load error:", e);
+          if (list) list.innerHTML = '<p class="hotel-list-status">Could not load hotels.</p>';
+          if (countEl) countEl.textContent = "Error";
+        });
     }
     
     if (document.readyState === "loading") {
@@ -205,7 +190,11 @@
         setTimeout(function() {
           document.querySelectorAll(".hotel-price[data-usd]").forEach(function(el) {
             var usd = Number(el.getAttribute("data-usd"));
-            if (usd) el.textContent = "from " + formatPrice(usd, currency());
+            if (usd) {
+              var rating = el.textContent.match(/★ [\d.]+/);
+              el.textContent = "from " + formatPrice(usd, currency());
+              if (rating) el.textContent += " · " + rating[0];
+            }
           });
         }, 50);
       });
