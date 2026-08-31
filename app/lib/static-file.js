@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const TYPES = {
@@ -8,7 +8,15 @@ const TYPES = {
 
 export function staticFile(name) {
   const ext = name.split(".").pop();
-  const body = readFileSync(join(process.cwd(), name), "utf8");
+  const candidates = [
+    join(process.cwd(), "public", name),
+    join(process.cwd(), name),
+  ];
+  const path = candidates.find((p) => existsSync(p));
+  if (!path) {
+    throw new Error(`missing static file ${name}`);
+  }
+  const body = readFileSync(path, "utf8");
   return new Response(body, {
     headers: {
       "content-type": TYPES[ext] || "application/octet-stream",

@@ -2,38 +2,41 @@
   const CID = "0";
   const RATE = 57;
   const DEST = [
-    { keys: ["cebu city"], kind: "local", cityId: 4001, areaId: 26695, label: "Cebu City" },
-    { keys: ["mactan"], kind: "local", cityId: 4001, areaId: 493921, label: "Mactan Island" },
-    { keys: ["cebu"], kind: "local", cityId: 4001, label: "Cebu, Philippines" },
-    { keys: ["manila"], kind: "agoda", cityId: 1622, label: "Manila, Philippines" },
-    { keys: ["boracay"], kind: "agoda", cityId: 15903, label: "Boracay, Philippines" },
-    { keys: ["siargao"], kind: "agoda", cityId: 18041, label: "Siargao, Philippines" },
-    { keys: ["bohol"], kind: "agoda", cityId: 16429, label: "Bohol, Philippines" },
-    { keys: ["el nido"], kind: "agoda", cityId: 16185, areaId: 539836, label: "El Nido, Palawan" },
-    { keys: ["coron"], kind: "agoda", cityId: 16185, areaId: 538237, label: "Coron, Palawan" },
-    { keys: ["palawan"], kind: "agoda", cityId: 16185, label: "Palawan, Philippines" },
-    { keys: ["bangkok"], kind: "agoda", cityId: 9395, label: "Bangkok, Thailand" },
-    { keys: ["tokyo"], kind: "agoda", cityId: 5085, label: "Tokyo, Japan" },
-    { keys: ["singapore"], kind: "agoda", cityId: 4064, label: "Singapore" },
-    { keys: ["seoul"], kind: "agoda", cityId: 14690, label: "Seoul, South Korea" },
-    { keys: ["hong kong"], kind: "agoda", cityId: 16808, label: "Hong Kong" },
-    { keys: ["taipei"], kind: "agoda", cityId: 4951, label: "Taipei, Taiwan" },
-    { keys: ["dubai"], kind: "agoda", cityId: 2994, label: "Dubai, UAE" },
-    { keys: ["baguio"], kind: "agoda", cityId: 17196, label: "Baguio, Philippines" },
-    { keys: ["davao"], kind: "agoda", cityId: 9360, label: "Davao, Philippines" },
-    { keys: ["iloilo"], kind: "agoda", cityId: 2085, label: "Iloilo, Philippines" },
-    { keys: ["dumaguete"], kind: "agoda", cityId: 18871, label: "Dumaguete, Philippines" },
-    { keys: ["camiguin"], kind: "agoda", cityId: 105961, label: "Camiguin, Philippines" },
-    { keys: ["batanes"], kind: "agoda", cityId: 690284, label: "Batanes, Philippines" },
-    { keys: ["tagaytay"], kind: "agoda", cityId: 18218, label: "Tagaytay, Philippines" },
-    { keys: ["clark"], kind: "agoda", cityId: 18875, label: "Clark, Philippines" },
-    { keys: ["puerto galera"], kind: "agoda", cityId: 18874, label: "Puerto Galera, Philippines" },
-    { keys: ["bacolod"], kind: "agoda", cityId: 10562, label: "Bacolod, Philippines" },
-    { keys: ["cagayan de oro", "cdo"], kind: "agoda", cityId: 18869, label: "Cagayan de Oro, Philippines" },
-    { keys: ["subic"], kind: "agoda", cityId: 18217, label: "Subic, Philippines" },
-    { keys: ["vigan"], kind: "agoda", cityId: 390245, areaId: 378699, label: "Vigan, Philippines" },
-    { keys: ["legazpi"], kind: "agoda", cityId: 23740, label: "Legazpi, Philippines" }
+    { keys: ["cebu city"], kind: "local", slug: "cebu", cityId: 4001, areaId: 26695, label: "Cebu City" },
+    { keys: ["mactan"], kind: "local", slug: "cebu", cityId: 4001, areaId: 493921, label: "Mactan Island" },
+    { keys: ["cebu"], kind: "local", slug: "cebu", cityId: 4001, label: "Cebu, Philippines" },
+    { keys: ["manila"], kind: "city", slug: "manila", cityId: 1622, label: "Manila, Philippines" },
+    { keys: ["boracay"], kind: "city", slug: "boracay", cityId: 15903, label: "Boracay, Philippines" },
+    { keys: ["siargao"], kind: "city", slug: "siargao", cityId: 18041, label: "Siargao, Philippines" },
+    { keys: ["bohol"], kind: "city", slug: "bohol", cityId: 16429, label: "Bohol, Philippines" },
+    { keys: ["el nido"], kind: "city", slug: "el-nido", cityId: 16185, areaId: 539836, label: "El Nido, Palawan" },
+    { keys: ["coron"], kind: "city", slug: "coron", cityId: 16185, areaId: 538237, label: "Coron, Palawan" },
+    { keys: ["palawan"], kind: "city", slug: "palawan", cityId: 16185, label: "Palawan, Philippines" },
+    { keys: ["bangkok"], kind: "city", slug: "bangkok", cityId: 9395, label: "Bangkok, Thailand" },
+    { keys: ["tokyo"], kind: "city", slug: "tokyo", cityId: 5085, label: "Tokyo, Japan" },
+    { keys: ["singapore"], kind: "city", slug: "singapore", cityId: 4064, label: "Singapore" },
+    { keys: ["seoul"], kind: "city", slug: "seoul", cityId: 14690, label: "Seoul, South Korea" },
+    { keys: ["hong kong"], kind: "city", slug: "hong-kong", cityId: 16808, label: "Hong Kong" },
+    { keys: ["taipei"], kind: "city", slug: "taipei", cityId: 4951, label: "Taipei, Taiwan" },
+    { keys: ["dubai"], kind: "city", slug: "dubai", cityId: 2994, label: "Dubai, UAE" },
+    { keys: ["baguio"], kind: "city", slug: "baguio", cityId: 17196, label: "Baguio, Philippines" },
+    { keys: ["davao"], kind: "city", slug: "davao", cityId: 9360, label: "Davao, Philippines" },
+    { keys: ["iloilo"], kind: "city", slug: "iloilo", cityId: 2085, label: "Iloilo, Philippines" },
+    { keys: ["dumaguete"], kind: "city", slug: "dumaguete", cityId: 18871, label: "Dumaguete, Philippines" },
+    { keys: ["camiguin"], kind: "city", slug: "camiguin", cityId: 105961, label: "Camiguin, Philippines" },
+    { keys: ["batanes"], kind: "city", slug: "batanes", cityId: 690284, label: "Batanes, Philippines" },
+    { keys: ["tagaytay"], kind: "city", slug: "tagaytay", cityId: 18218, label: "Tagaytay, Philippines" },
+    { keys: ["clark"], kind: "city", slug: "clark", cityId: 18875, label: "Clark, Philippines" },
+    { keys: ["puerto galera"], kind: "city", slug: "puerto-galera", cityId: 18874, label: "Puerto Galera, Philippines" },
+    { keys: ["bacolod"], kind: "city", slug: "bacolod", cityId: 10562, label: "Bacolod, Philippines" },
+    { keys: ["cagayan de oro", "cdo"], kind: "city", slug: "cagayan-de-oro", cityId: 18869, label: "Cagayan de Oro, Philippines" },
+    { keys: ["subic"], kind: "city", slug: "subic", cityId: 18217, label: "Subic, Philippines" },
+    { keys: ["vigan"], kind: "city", slug: "vigan", cityId: 390245, areaId: 378699, label: "Vigan, Philippines" },
+    { keys: ["legazpi"], kind: "city", slug: "legazpi", cityId: 23740, label: "Legazpi, Philippines" }
   ];
+  const RESERVED_SLUGS = {
+    hotel: 1, results: 1, api: 1, index: 1, search: 1, how: 1, destinations: 1
+  };
 
   const header = document.querySelector(".site-header");
   if (header) {
@@ -61,11 +64,12 @@
   });
 
   const params = new URLSearchParams(location.search);
-  const city = params.get("city");
+  const city = params.get("hotel") || params.get("city");
   const head = document.querySelector(".page-head h1");
   if (city && head) {
-    head.textContent = city;
-    document.title = city + " hotels — Kwarto";
+    const short = String(city).split(",")[0].trim() || city;
+    head.textContent = short;
+    document.title = short + " hotels — Kwarto";
   }
 
   const currency = () => document.documentElement.dataset.cur || "PHP";
@@ -181,6 +185,14 @@
     return (typed || "").trim();
   }
 
+  function slugify(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/&/g, " and ")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
   function isCebuLocal(dest, typed) {
     if (dest && dest.kind === "local") return true;
     if (dest && Number(dest.cityId) === 4001) return true;
@@ -189,13 +201,26 @@
     return q.indexOf("cebu") !== -1 || q.indexOf("mactan") !== -1;
   }
 
+  function destSlug(dest, typed) {
+    if (dest && dest.slug) return dest.slug;
+    if (isCebuLocal(dest, typed)) return "cebu";
+    if (dest && dest.cityName) return slugify(String(dest.cityName).split(",")[0]);
+    if (dest && dest.hotelId && dest.label && dest.label.indexOf(",") !== -1) {
+      return slugify(dest.label.split(",").pop().trim());
+    }
+    const label = destQuery(dest, typed);
+    return slugify(String(label || "").split(",")[0].trim());
+  }
+
   function fetchSuggest(typed, signal) {
-    return fetch("/api/dest?q=" + encodeURIComponent(typed), signal ? { signal: signal } : undefined)
+    const url = "/api/dest?q=" + encodeURIComponent(typed);
+    return fetch(url, signal ? { signal: signal } : undefined)
       .then((r) => r.json())
       .then((j) => {
         const list = Array.isArray(j && j.suggestions) ? j.suggestions.filter(destOk) : [];
         const dest = destOk(j && j.dest) ? j.dest : null;
-        return { dest: dest, suggestions: list };
+        const hotels = Array.isArray(j && j.hotels) ? j.hotels.filter(destOk) : [];
+        return { dest: dest, suggestions: list, hotels: hotels };
       });
   }
 
@@ -390,6 +415,7 @@
         e.preventDefault();
         if (visibleRows[0]) choose(visibleRows[0]);
         else closeTypeahead();
+        if (searchForm && picked && destOk(picked)) searchForm.requestSubmit();
       }
     });
     document.addEventListener("pointerdown", (e) => {
@@ -421,19 +447,11 @@
         return;
       }
       const ready = destNow(typed) || resolveDest(typed);
-      if (isCebuLocal(ready, typed)) {
-        location.href = cebuListHref();
-        return;
-      }
-      window.open(klookWrap(destQuery(ready, typed)), "_blank", "noopener");
+      location.href = cityPageHref(ready, typed);
     });
   }
 
   function destCardQuery(a) {
-    const href = a.getAttribute("href") || "";
-    if (/cebu(\.html)?/i.test(href) && href.indexOf("agoda.com") === -1 && href.indexOf("klook.com") === -1) return "";
-    const hotel = (a.getAttribute("data-hotel-name") || "").trim();
-    if (hotel) return hotel;
     const city = (a.getAttribute("data-city") || "").trim();
     if (city) return city;
     const h3 = a.querySelector("h3");
@@ -441,22 +459,32 @@
     return String(h3.textContent || "").replace(/^Hotels in\s+/i, "").trim();
   }
 
+  function destCardSlug(a) {
+    const fromCity = slugify(destCardQuery(a));
+    if (fromCity) return fromCity;
+    const href = a.getAttribute("href") || "";
+    const m = href.match(/^\/?([a-z0-9-]+)(?:\.html)?(?:[?#]|$)/i);
+    if (m && !RESERVED_SLUGS[m[1].toLowerCase()]) return m[1].toLowerCase();
+    return "";
+  }
+
   function bindDestCards() {
     document.querySelectorAll("a.dest-card").forEach((a) => {
-      const q = destCardQuery(a);
-      if (!q) return;
-      a.href = klookWrap(q);
-      a.target = "_blank";
-      a.rel = "noopener";
+      const label = destCardQuery(a);
+      const slug = destCardSlug(a);
+      if (!label && !slug) return;
+      const dest = resolveDest(label) || { slug: slug, label: label };
+      if (dest && !dest.slug && slug) dest.slug = slug;
+      a.href = cityPageHref(dest, label);
+      a.removeAttribute("target");
+      a.removeAttribute("rel");
     });
   }
 
   bindDestCards();
 
-  function cebuListHref() {
+  function stayQuery(u) {
     const { checkIn, checkOut, guests, children, childages } = stayDates();
-    const u = new URL("cebu.html", location.href);
-    u.searchParams.set("city", "Cebu, Philippines");
     u.searchParams.set("checkin", checkIn);
     u.searchParams.set("checkout", checkOut);
     u.searchParams.set("guests", String(guests));
@@ -464,24 +492,298 @@
       u.searchParams.set("children", String(children));
       if (childages) u.searchParams.set("childages", childages);
     }
-    return "cebu.html" + u.search;
+    return u.search;
+  }
+
+  function cityPageHref(dest, typed) {
+    const slug = destSlug(dest, typed);
+    const path = slug && !RESERVED_SLUGS[slug] ? "/" + slug : "/results";
+    const u = new URL(path, location.origin);
+    const label = destQuery(dest, typed);
+    if (label) u.searchParams.set("city", label);
+    if (dest && dest.hotelId && dest.label) u.searchParams.set("hotel", dest.label);
+    return path + stayQuery(u);
+  }
+
+  function cebuListHref() {
+    return cityPageHref({ kind: "local", slug: "cebu", cityId: 4001, label: "Cebu, Philippines" }, "Cebu");
   }
 
   function bindCebuCard() {
-    document.querySelectorAll("a.dest-card").forEach((a) => {
-      const href = a.getAttribute("href") || "";
-      if (href.indexOf("cebu") === -1) return;
-      if (href.indexOf("agoda.com") !== -1) return;
-      if (href.indexOf("klook.com") !== -1 || href.indexOf("tp.media") !== -1) return;
-      a.href = cebuListHref();
-      a.removeAttribute("target");
-    });
+    bindDestCards();
   }
   bindCebuCard();
 
+  function hotelCardName(card) {
+    if (!card) return "";
+    const fromData = (card.getAttribute("data-hotel-name") || "").trim();
+    if (fromData) return fromData;
+    const h3 = card.querySelector("h3");
+    return h3 ? String(h3.textContent || "").trim() : "";
+  }
+
+  function bindHotelCards() {
+    document.querySelectorAll(".hotel-list .dest-card").forEach((card) => {
+      const name = hotelCardName(card);
+      if (name && !card.getAttribute("data-hotel-name")) card.setAttribute("data-hotel-name", name);
+      if (card.getAttribute("data-bound-hotel") === "1") return;
+      card.setAttribute("data-bound-hotel", "1");
+      card.addEventListener("click", (e) => {
+        const hotelName = hotelCardName(card);
+        if (!hotelName) return;
+        e.preventDefault();
+        window.open(klookWrap(hotelName), "_blank", "noopener");
+      });
+    });
+  }
+
+  function bindContinue() {
+    document.querySelectorAll("[data-continue]").forEach((el) => {
+      if (el.getAttribute("data-bound-continue") === "1") return;
+      el.setAttribute("data-bound-continue", "1");
+      const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
+      const url = klookWrap(q);
+      if (el.tagName === "A") {
+        el.href = url;
+        el.target = "_blank";
+        el.rel = "noopener";
+      } else {
+        el.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          window.open(url, "_blank", "noopener");
+        });
+      }
+    });
+  }
+
+  function displayHotelName(row) {
+    if (!row) return "";
+    if (typeof row === "string") return row.trim();
+    const name = String(row.name || row.label || "").trim();
+    if (row.hotelId && name.indexOf(",") !== -1) {
+      return name.split(",")[0].trim() || name;
+    }
+    return name;
+  }
+
+  function hotelsFrom(j) {
+    const fromField = Array.isArray(j && j.hotels) ? j.hotels : [];
+    const out = [];
+    const seen = new Set();
+    fromField.forEach((h) => {
+      const name = displayHotelName(h);
+      if (!name) return;
+      const key = String((h && (h.id || h.hotelId)) || name).toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({
+        name: name,
+        image: h && h.image ? String(h.image) : "",
+        deepLink: h && h.deepLink ? String(h.deepLink) : "",
+        provider: h && h.provider ? String(h.provider) : ""
+      });
+    });
+    return out;
+  }
+
+  const HOTEL_PAGE_SIZE = 12;
+  let hotelNames = [];
+  let hotelPlace = "";
+  let hotelPage = 1;
+
+  function renderHotelArticle(hotel) {
+    const name = displayHotelName(hotel);
+    const safe = escapeHtml(name);
+    const image = hotel && hotel.image ? String(hotel.image) : "";
+    const cityLine = hotelPlace
+      ? '<p class="why">' + escapeHtml(hotelPlace) + "</p>"
+      : "";
+    const photo = image
+      ? '<img src="' + escapeHtml(image) + '" alt="" />'
+      : '<div class="hotel-photo-gap" aria-hidden="true"></div>';
+    return '<article class="dest-card" data-hotel-name="' + safe + '">' +
+      photo +
+      '<div class="meta">' +
+      "<h3>" + safe + "</h3>" +
+      cityLine +
+      "</div></article>";
+  }
+
+  function renderEmptyCity(place, hotelName) {
+    const q = hotelName || place;
+    const safeQ = escapeHtml(q);
+    const status = hotelName
+      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Klook. A full city list needs a partner hotel feed."
+      : "Hotels in " + escapeHtml(place) + " will list here when Klook sends a city feed. Compare on Klook with your dates.";
+    return '<div class="hotel-empty" data-city-empty>' +
+      '<p class="hotel-list-status">' + status + "</p>" +
+      '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Klook</a>' +
+      "</div>";
+  }
+
+  function uniqueHotelNames(names) {
+    const unique = [];
+    const seen = new Set();
+    (names || []).forEach((n) => {
+      const hotel = typeof n === "string" ? { name: n } : (n || {});
+      const name = displayHotelName(hotel);
+      const key = name.toLowerCase();
+      if (!name || seen.has(key)) return;
+      seen.add(key);
+      unique.push(hotel);
+    });
+    return unique;
+  }
+
+  function pageFromUrl() {
+    const n = Number(params.get("page"));
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
+  }
+
+  function setPageUrl(n) {
+    try {
+      const u = new URL(location.href);
+      if (n <= 1) u.searchParams.delete("page");
+      else u.searchParams.set("page", String(n));
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    } catch (e) {}
+  }
+
+  function paintHotelPage() {
+    const list = document.querySelector("[data-results-list]") || document.querySelector(".hotel-list");
+    const countEl = document.querySelector("[data-hotel-count]");
+    const pager = document.querySelector("[data-hotel-pager]");
+    const prev = document.querySelector("[data-page-prev]");
+    const next = document.querySelector("[data-page-next]");
+    const status = document.querySelector("[data-page-status]");
+    if (!list) return;
+    const unique = hotelNames;
+    if (!unique.length) {
+      const pickedHotel = (params.get("hotel") || "").trim();
+      list.innerHTML = renderEmptyCity(hotelPlace || "this city", pickedHotel.split(",")[0].trim());
+      if (countEl) countEl.textContent = "Compare on Klook";
+      if (pager) pager.hidden = true;
+      bindContinue();
+      return;
+    }
+    const pages = Math.max(1, Math.ceil(unique.length / HOTEL_PAGE_SIZE));
+    if (hotelPage > pages) hotelPage = pages;
+    if (hotelPage < 1) hotelPage = 1;
+    const start = (hotelPage - 1) * HOTEL_PAGE_SIZE;
+    const slice = unique.slice(start, start + HOTEL_PAGE_SIZE);
+    list.innerHTML = slice.map(renderHotelArticle).join("");
+    if (countEl) countEl.textContent = unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    if (pager) pager.hidden = unique.length <= HOTEL_PAGE_SIZE;
+    if (status) {
+      const from = start + 1;
+      const to = start + slice.length;
+      status.textContent = from + "–" + to + " of " + unique.length;
+    }
+    if (prev) prev.disabled = hotelPage <= 1;
+    if (next) next.disabled = hotelPage >= pages;
+    setPageUrl(hotelPage);
+    bindHotelCards();
+    bindContinue();
+  }
+
+  function paintHotelNames(names) {
+    hotelNames = uniqueHotelNames(names);
+    hotelPage = pageFromUrl();
+    paintHotelPage();
+  }
+
+  function bindHotelPager() {
+    const prev = document.querySelector("[data-page-prev]");
+    const next = document.querySelector("[data-page-next]");
+    function go(delta) {
+      const pages = Math.max(1, Math.ceil(hotelNames.length / HOTEL_PAGE_SIZE));
+      const nextPage = hotelPage + delta;
+      if (nextPage < 1 || nextPage > pages) return;
+      hotelPage = nextPage;
+      paintHotelPage();
+      const list = document.querySelector("[data-results-list]");
+      if (list) list.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    if (prev && prev.getAttribute("data-bound-pager") !== "1") {
+      prev.setAttribute("data-bound-pager", "1");
+      prev.addEventListener("click", () => go(-1));
+    }
+    if (next && next.getAttribute("data-bound-pager") !== "1") {
+      next.setAttribute("data-bound-pager", "1");
+      next.addEventListener("click", () => go(1));
+    }
+  }
+
+  function localCityId(place) {
+    const q = String(place || "").trim().toLowerCase();
+    if (!q) return 0;
+    for (const d of DEST) {
+      if (d.keys.some((k) => q.indexOf(k) !== -1)) return d.cityId || 0;
+    }
+    return 0;
+  }
+
+  function isCebuPage() {
+    return /cebu\.html?$/i.test(location.pathname) || /(^|\/)cebu\/?$/i.test(location.pathname);
+  }
+
+  function placeFromPath() {
+    const path = String(location.pathname || "").replace(/\/+$/, "");
+    const slug = path.replace(/^\//, "").replace(/\.html$/i, "").toLowerCase();
+    if (!slug || slug === "results" || slug === "index") return "";
+    for (const d of DEST) {
+      if (d.slug === slug || d.keys.some((k) => slugify(k) === slug)) return d.label;
+    }
+    return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  }
+
+  function fetchHotels(place) {
+    return fetch("/api/hotels?city=" + encodeURIComponent(place))
+      .then((r) => r.json())
+      .then((j) => hotelsFrom(j))
+      .catch(() => []);
+  }
+
+  function fillResults() {
+    const list = document.querySelector("[data-results-list]");
+    if (!list) return;
+    bindHotelPager();
+    const place = (params.get("city") || placeFromPath() || (isCebuPage() ? "Cebu, Philippines" : "")).trim();
+    const short = place.split(",")[0].trim() || place || "Hotels";
+    hotelPlace = short;
+    const crumb = document.querySelector("[data-results-place]");
+    const heading = document.querySelector("[data-results-heading]");
+    if (crumb) crumb.textContent = short;
+    if (heading) heading.textContent = "Hotels in " + short;
+    if (head) {
+      head.textContent = short;
+      document.title = short + " hotels — Kwarto";
+    }
+    const pickedHotel = (params.get("hotel") || "").trim();
+    if (!place && !pickedHotel) {
+      paintHotelNames([]);
+      return;
+    }
+    if (!list.querySelector(".dest-card") && !list.querySelector("[data-city-empty]")) {
+      list.innerHTML = '<p class="hotel-list-status">Finding hotels…</p>';
+    }
+    fetchHotels(place || short)
+      .then((hotels) => {
+        paintHotelNames(hotels);
+      })
+      .catch(() => {
+        paintHotelNames([]);
+      });
+  }
+
+  bindHotelCards();
+  bindContinue();
+  fillResults();
   ["checkin", "checkout", "guests", "children", "childages"].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
+    el.addEventListener("change", bindHotelCards);
+    el.addEventListener("input", bindHotelCards);
     el.addEventListener("change", bindCebuCard);
     el.addEventListener("input", bindCebuCard);
     el.addEventListener("change", bindDestCards);
@@ -489,26 +791,16 @@
   });
   document.addEventListener("pointerdown", (e) => {
     const card = e.target && e.target.closest ? e.target.closest("a.dest-card") : null;
-    if (!card) return;
-    const q = destCardQuery(card);
-    if (!q) return;
-    card.href = klookWrap(q);
-    card.target = "_blank";
-    card.rel = "noopener";
-  }, true);
-
-  document.querySelectorAll("[data-continue]").forEach((el) => {
-    const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
-    const url = klookWrap(q);
-    if (el.tagName === "A") {
-      el.href = url;
-      el.target = "_blank";
-      el.rel = "noopener";
-    } else {
-      el.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        window.open(url, "_blank", "noopener");
-      });
+    if (card && card.closest && !card.closest(".hotel-list")) {
+      const label = destCardQuery(card);
+      const slug = destCardSlug(card);
+      if (label || slug) {
+        const dest = resolveDest(label) || { slug: slug, label: label };
+        if (dest && !dest.slug && slug) dest.slug = slug;
+        card.href = cityPageHref(dest, label);
+        card.removeAttribute("target");
+        card.removeAttribute("rel");
+      }
     }
-  });
+  }, true);
 })();
