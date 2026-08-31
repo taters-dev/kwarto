@@ -342,7 +342,7 @@ body.nc .grain { display:none; }
 
 .hotel-pills {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 6px;
   margin-top: 10px;
   width: 100%;

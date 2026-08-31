@@ -175,19 +175,6 @@
     return tpWrap(klookDest(query), 137, 4110);
   }
 
-  function kkdayDest(query) {
-    const { checkIn, checkOut } = stayDates();
-    const u = new URL("https://www.kkday.com/en/hotels");
-    if (query) u.searchParams.set("keyword", query);
-    if (checkIn) u.searchParams.set("check_in", checkIn);
-    if (checkOut) u.searchParams.set("check_out", checkOut);
-    return u.toString();
-  }
-
-  function kkdayWrap(query) {
-    return tpWrap(kkdayDest(query), 633, 9074);
-  }
-
   function destQuery(dest, typed) {
     if (dest && dest.label) return dest.label;
     if (dest && dest.text) return dest.text;
@@ -494,7 +481,6 @@
     const provider = a.getAttribute("data-provider");
     const hotelName = (a.getAttribute("data-hotel-name") || "").trim();
     if (provider === "klook") return klookWrap(hotelName);
-    if (provider === "kkday") return kkdayWrap(hotelName);
     return a.href;
   }
 
