@@ -73,99 +73,6 @@ async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
   }
 }
 
-const DEMO_HOTELS = [
-  {
-    id: "demo-1",
-    name: "Crimson Resort & Spa Mactan",
-    stars: 5,
-    rating: 9.2,
-    reviewCount: 3847,
-    photo: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
-    priceUSD: 245,
-    pricePHP: 13965,
-    city: "Cebu",
-    district: "Mactan Island",
-    hasFreeCancellation: true,
-    hasFreeParking: true,
-    badges: ["Beachfront", "Spa"]
-  },
-  {
-    id: "demo-2",
-    name: "Radisson Blu Cebu",
-    stars: 5,
-    rating: 8.8,
-    reviewCount: 2156,
-    photo: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80",
-    priceUSD: 156,
-    pricePHP: 8892,
-    city: "Cebu",
-    district: "Cebu City Center",
-    hasFreeCancellation: true,
-    hasFreeParking: false,
-    badges: ["City Center"]
-  },
-  {
-    id: "demo-3",
-    name: "Plantation Bay Resort",
-    stars: 5,
-    rating: 9.0,
-    reviewCount: 4521,
-    photo: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
-    priceUSD: 198,
-    pricePHP: 11286,
-    city: "Cebu",
-    district: "Mactan Island",
-    hasFreeCancellation: true,
-    hasFreeParking: true,
-    badges: ["Resort", "Pool"]
-  },
-  {
-    id: "demo-4",
-    name: "Seda Ayala Center Cebu",
-    stars: 4,
-    rating: 8.9,
-    reviewCount: 1893,
-    photo: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=800&q=80",
-    priceUSD: 112,
-    pricePHP: 6384,
-    city: "Cebu",
-    district: "Cebu Business Park",
-    hasFreeCancellation: true,
-    hasFreeParking: true,
-    badges: ["Business"]
-  },
-  {
-    id: "demo-5",
-    name: "Bluewater Maribago",
-    stars: 4,
-    rating: 8.5,
-    reviewCount: 2734,
-    photo: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
-    priceUSD: 134,
-    pricePHP: 7638,
-    city: "Cebu",
-    district: "Mactan Island",
-    hasFreeCancellation: false,
-    hasFreeParking: true,
-    badges: ["Beach Resort"]
-  },
-  {
-    id: "demo-6",
-    name: "Marco Polo Plaza Cebu",
-    stars: 5,
-    rating: 8.7,
-    reviewCount: 3102,
-    photo: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
-    priceUSD: 142,
-    pricePHP: 8094,
-    city: "Cebu",
-    district: "Nivel Hills",
-    hasFreeCancellation: true,
-    hasFreeParking: true,
-    badges: ["Mountain View"]
-  }
-];
-
 export async function GET(request) {
   const params = new URL(request.url).searchParams;
   const checkIn = params.get("checkIn") || formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
@@ -176,14 +83,10 @@ export async function GET(request) {
   
   if (!RAPIDAPI_KEY) {
     return Response.json({
-      checkIn,
-      checkOut,
-      currency,
-      city,
-      hotels: DEMO_HOTELS,
-      isDemo: true,
-      hasKey: false
-    });
+      error: "RAPIDAPI_KEY environment variable not configured",
+      hint: "Get your key at https://rapidapi.com/apidojo/api/booking",
+      hotels: []
+    }, { status: 503 });
   }
   
   const destination = await findDestination(city);
