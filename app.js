@@ -163,10 +163,15 @@
     return u.toString();
   }
 
-  function klookDest(query) {
+  function klookDest(query, city) {
     const { checkIn, checkOut, guests, children } = stayDates();
     const u = new URL("https://www.klook.com/hotels/");
-    if (query) u.searchParams.set("keyword", query);
+    // Include city in search to improve match accuracy
+    let searchQuery = query || "";
+    if (city && searchQuery.toLowerCase().indexOf(city.toLowerCase()) === -1) {
+      searchQuery = searchQuery + " " + city;
+    }
+    if (searchQuery) u.searchParams.set("keyword", searchQuery.trim());
     if (checkIn) u.searchParams.set("check_in", checkIn);
     if (checkOut) u.searchParams.set("check_out", checkOut);
     u.searchParams.set("adult_num", String(guests || 2));
@@ -175,8 +180,8 @@
     return u.toString();
   }
 
-  function klookWrap(query) {
-    return tpWrap(klookDest(query), 137, 4110);
+  function klookWrap(query, city) {
+    return tpWrap(klookDest(query, city), 137, 4110);
   }
 
   function destQuery(dest, typed) {
@@ -644,13 +649,14 @@
       if (name && !card.getAttribute("data-hotel-name")) card.setAttribute("data-hotel-name", name);
       if (card.getAttribute("data-bound-hotel") === "1") return;
       card.setAttribute("data-bound-hotel", "1");
+      card.setAttribute("title", "Search for " + name + " on Klook");
       card.addEventListener("click", (e) => {
         // Don't navigate if clicking gallery controls
         if (e.target.closest(".gallery-nav") || e.target.closest(".gallery-dot")) return;
         const hotelName = hotelCardName(card);
         if (!hotelName) return;
         e.preventDefault();
-        window.open(klookWrap(hotelName), "_blank", "noopener");
+        window.open(klookWrap(hotelName, hotelPlace), "_blank", "noopener");
       });
     });
     bindGalleries();
@@ -661,7 +667,8 @@
       if (el.getAttribute("data-bound-continue") === "1") return;
       el.setAttribute("data-bound-continue", "1");
       const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
-      const url = klookWrap(q);
+      const city = el.getAttribute("data-city") || hotelPlace || "Cebu";
+      const url = klookWrap(q, city);
       if (el.tagName === "A") {
         el.href = url;
         el.target = "_blank";
@@ -789,7 +796,7 @@
       footerHtml = '<div class="hotel-card-footer">' + footerParts.join("") + '</div>';
     }
     
-    return '<a class="hotel-card-v2" href="' + escapeHtml(klookWrap(name)) + '" target="_blank" rel="noopener" data-hotel-name="' + safe + '">' +
+    return '<a class="hotel-card-v2" href="' + escapeHtml(klookWrap(name, hotelPlace)) + '" target="_blank" rel="noopener" data-hotel-name="' + safe + '" title="Search for ' + safe + ' on Klook">' +
       galleryHtml +
       '<div class="hotel-card-content">' +
       '<h3 class="hotel-card-name">' + safe + '</h3>' +
