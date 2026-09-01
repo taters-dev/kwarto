@@ -124,17 +124,42 @@ async function fetchHotelPhotos(hotelIds) {
       
       if (!data) return { hotelId, photos: [] };
       
-      // Parse photos from response - format is usually an array or has a data/photos array
+      // Parse photos from response
+      // Format: { url_prefix: "https://cf.bstatic.com", data: { "hotel_id": [[photo_arrays]] } }
+      // Each photo array: [1, [], photo_id, [tags], "/path/max1024.jpg", "/path/max300.jpg", ...]
       let photoUrls = [];
       
-      if (Array.isArray(data)) {
-        photoUrls = data.slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
-      } else if (data.data && Array.isArray(data.data)) {
-        photoUrls = data.data.slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
-      } else if (data.photos && Array.isArray(data.photos)) {
-        photoUrls = data.photos.slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
-      } else if (data[hotelId] && Array.isArray(data[hotelId])) {
-        photoUrls = data[hotelId].slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
+      const urlPrefix = data.url_prefix || "https://cf.bstatic.com";
+      const hotelData = data.data && data.data[hotelId];
+      
+      if (hotelData && Array.isArray(hotelData)) {
+        hotelData.slice(0, 5).forEach(photoArr => {
+          if (Array.isArray(photoArr)) {
+            let foundUrl = null;
+            // Find URL path in the array (usually at index 4 or 5)
+            for (let i = 4; i < photoArr.length && !foundUrl; i++) {
+              const item = photoArr[i];
+              if (typeof item === 'string' && item.startsWith('/xdata/images/')) {
+                // Prefer max1024 or max500 size
+                if (item.includes('max1024') || item.includes('max500')) {
+                  foundUrl = urlPrefix + item;
+                }
+              }
+            }
+            // Fallback: just take the first URL path found
+            if (!foundUrl) {
+              for (let i = 4; i < photoArr.length && !foundUrl; i++) {
+                const item = photoArr[i];
+                if (typeof item === 'string' && item.startsWith('/')) {
+                  foundUrl = urlPrefix + item;
+                }
+              }
+            }
+            if (foundUrl) {
+              photoUrls.push(foundUrl);
+            }
+          }
+        });
       }
       
       return { hotelId, photos: photoUrls };
