@@ -94,6 +94,8 @@ async function fetchHotelPhotos(hotelIds) {
   // Fetch photos for first 4 hotels in parallel (to avoid too many API calls)
   const hotelIdsToFetch = hotelIds.slice(0, 4);
   
+  let rawResponses = [];
+  
   const fetchPromises = hotelIdsToFetch.map(async (hotelId) => {
     try {
       const params = new URLSearchParams({
@@ -111,9 +113,14 @@ async function fetchHotelPhotos(hotelIds) {
         cache: "no-store"
       });
       
-      if (!r.ok) return { hotelId, photos: [] };
+      if (!r.ok) return { hotelId, photos: [], raw: { error: r.status } };
       
       const data = await r.json();
+      
+      // Store raw response for debugging (first hotel only)
+      if (rawResponses.length === 0) {
+        rawResponses.push({ hotelId, keys: data ? Object.keys(data) : null, sample: JSON.stringify(data).slice(0, 500) });
+      }
       
       if (!data) return { hotelId, photos: [] };
       
@@ -133,7 +140,7 @@ async function fetchHotelPhotos(hotelIds) {
       return { hotelId, photos: photoUrls };
     } catch (e) {
       console.error(`Photo fetch error for hotel ${hotelId}:`, e);
-      return { hotelId, photos: [] };
+      return { hotelId, photos: [], error: e.message };
     }
   });
   
@@ -145,7 +152,7 @@ async function fetchHotelPhotos(hotelIds) {
     }
   });
   
-  return photosMap;
+  return { photosMap, rawResponses };
 }
 
 export async function GET(request) {
@@ -200,7 +207,7 @@ export async function GET(request) {
   const hotelIds = hotelItems.map(h => h.hotel_id);
   
   // Fetch photos for all hotels in parallel
-  const photosMap = await fetchHotelPhotos(hotelIds);
+  const { photosMap, rawResponses } = await fetchHotelPhotos(hotelIds);
   
   const results = hotelItems.map(hotel => {
       const priceBreakdown = hotel.composite_price_breakdown;
@@ -266,7 +273,8 @@ export async function GET(request) {
       photosFound: Object.keys(photosMap).length,
       hotelsWithMultiplePhotos: Object.entries(photosMap)
         .filter(([_, photos]) => photos.length > 1)
-        .map(([id, photos]) => ({ id, count: photos.length }))
+        .map(([id, photos]) => ({ id, count: photos.length })),
+      rawApiResponse: rawResponses[0] || null
     };
   }
   
