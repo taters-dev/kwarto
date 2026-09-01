@@ -73,6 +73,56 @@ async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
   }
 }
 
+async function fetchHotelPhotos(hotelIds) {
+  if (!RAPIDAPI_KEY || !hotelIds || hotelIds.length === 0) return {};
+  
+  const params = new URLSearchParams({
+    hotel_ids: hotelIds.join(","),
+    languagecode: "en-us"
+  });
+  
+  const url = `https://${RAPIDAPI_HOST}/properties/get-hotel-photos?${params.toString()}`;
+  
+  try {
+    const r = await fetch(url, {
+      headers: {
+        "x-rapidapi-host": RAPIDAPI_HOST,
+        "x-rapidapi-key": RAPIDAPI_KEY
+      },
+      cache: "no-store"
+    });
+    
+    if (!r.ok) return {};
+    const data = await r.json();
+    
+    // Build a map of hotel_id -> photos array
+    const photosMap = {};
+    if (data && typeof data === "object") {
+      // Response format may vary - handle different structures
+      Object.entries(data).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          // If value is array of photos
+          photosMap[key] = value
+            .filter(p => p && (p.url_max || p.url_1440 || p.url_original || p.url))
+            .slice(0, 5)
+            .map(p => p.url_max || p.url_1440 || p.url_original || p.url);
+        } else if (value && Array.isArray(value.photos)) {
+          // If value has a photos array
+          photosMap[key] = value.photos
+            .filter(p => p && (p.url_max || p.url_1440 || p.url_original || p.url))
+            .slice(0, 5)
+            .map(p => p.url_max || p.url_1440 || p.url_original || p.url);
+        }
+      });
+    }
+    
+    return photosMap;
+  } catch (e) {
+    console.error("Hotel photos error:", e);
+    return {};
+  }
+}
+
 export async function GET(request) {
   const params = new URL(request.url).searchParams;
   const checkIn = params.get("checkIn") || formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
@@ -117,10 +167,17 @@ export async function GET(request) {
     });
   }
   
-  const results = data.result
+  const hotelItems = data.result
     .filter(item => item.type === "property_card" && item.hotel_id)
-    .slice(0, 12)
-    .map(hotel => {
+    .slice(0, 12);
+  
+  // Get hotel IDs for photo fetch
+  const hotelIds = hotelItems.map(h => h.hotel_id);
+  
+  // Fetch photos for all hotels in parallel
+  const photosMap = await fetchHotelPhotos(hotelIds);
+  
+  const results = hotelItems.map(hotel => {
       const priceBreakdown = hotel.composite_price_breakdown;
       let priceUSD = null;
       
@@ -130,31 +187,20 @@ export async function GET(request) {
         priceUSD = Math.round(priceBreakdown.gross_amount.value / 3);
       }
       
-      // Collect all available photos
+      // Start with main photo from list endpoint
       const photos = [];
       const mainPhotoUrl = hotel.main_photo_url || null;
       if (mainPhotoUrl) {
         photos.push(mainPhotoUrl.replace('/square60/', '/max500/'));
       }
       
-      // Try to get additional photos from property_photo_urls if available
-      if (hotel.property_photo_urls && Array.isArray(hotel.property_photo_urls)) {
-        hotel.property_photo_urls.forEach(url => {
-          if (url && !photos.includes(url)) {
-            photos.push(url.replace('/square60/', '/max500/'));
-          }
-        });
-      }
-      
-      // Also check for photos array in the response
-      if (hotel.photos && Array.isArray(hotel.photos)) {
-        hotel.photos.forEach(p => {
-          const url = p.url || p.photo_url || p;
-          if (typeof url === 'string' && !photos.includes(url)) {
-            photos.push(url.replace('/square60/', '/max500/'));
-          }
-        });
-      }
+      // Add photos from the photos endpoint
+      const additionalPhotos = photosMap[hotel.hotel_id] || [];
+      additionalPhotos.forEach(url => {
+        if (url && !photos.includes(url)) {
+          photos.push(url);
+        }
+      });
       
       return {
         id: hotel.hotel_id,
