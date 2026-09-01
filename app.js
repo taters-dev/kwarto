@@ -789,7 +789,7 @@
       footerHtml = '<div class="hotel-card-footer">' + footerParts.join("") + '</div>';
     }
     
-    return '<a class="hotel-card-v2" href="#" data-hotel-name="' + safe + '">' +
+    return '<a class="hotel-card-v2" href="' + escapeHtml(klookWrap(name)) + '" target="_blank" rel="noopener" data-hotel-name="' + safe + '">' +
       galleryHtml +
       '<div class="hotel-card-content">' +
       '<h3 class="hotel-card-name">' + safe + '</h3>' +

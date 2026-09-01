@@ -100,12 +100,51 @@
       return "₱" + Math.round(usd * RATE).toLocaleString("en-PH");
     }
     
+    function tpWrap(destUrl, campaignId, p) {
+      var u = new URL("https://tp.media/r");
+      u.searchParams.set("campaign_id", String(campaignId));
+      u.searchParams.set("marker", "771660");
+      u.searchParams.set("p", String(p));
+      u.searchParams.set("trs", "568222");
+      u.searchParams.set("u", destUrl);
+      return u.toString();
+    }
+    
+    function klookDest(query) {
+      var checkIn = document.getElementById("checkin");
+      var checkOut = document.getElementById("checkout");
+      var guests = document.getElementById("guests");
+      var children = document.getElementById("children");
+      var u = new URL("https://www.klook.com/hotels/");
+      if (query) u.searchParams.set("keyword", query);
+      if (checkIn && checkIn.value) u.searchParams.set("check_in", checkIn.value);
+      if (checkOut && checkOut.value) u.searchParams.set("check_out", checkOut.value);
+      u.searchParams.set("adult_num", String((guests && guests.value) || 2));
+      u.searchParams.set("child_num", String((children && children.value) || 0));
+      u.searchParams.set("room_num", "1");
+      return u.toString();
+    }
+    
+    function klookWrap(query) {
+      return tpWrap(klookDest(query), 137, 4110);
+    }
+    
     function createHotelCard(hotel) {
       var card = document.createElement("a");
       card.className = "hotel-card-v2";
-      card.href = "#";
+      card.href = klookWrap(hotel.name);
+      card.target = "_blank";
+      card.rel = "noopener";
       card.setAttribute("data-hotel-name", hotel.name);
       card.setAttribute("data-hotel-id", hotel.id);
+      
+      card.addEventListener("click", function(e) {
+        if (e.target.closest && (e.target.closest(".gallery-nav") || e.target.closest(".gallery-dot"))) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+      });
       
       // Image gallery section
       var gallery = document.createElement("div");
