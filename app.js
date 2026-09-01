@@ -522,6 +522,61 @@
     return h3 ? String(h3.textContent || "").trim() : "";
   }
 
+  function bindGalleries() {
+    document.querySelectorAll(".hotel-card-gallery").forEach((gallery) => {
+      if (gallery.getAttribute("data-bound-gallery") === "1") return;
+      gallery.setAttribute("data-bound-gallery", "1");
+      
+      const track = gallery.querySelector(".gallery-track");
+      const dots = gallery.querySelectorAll(".gallery-dot");
+      const prevBtn = gallery.querySelector(".gallery-prev");
+      const nextBtn = gallery.querySelector(".gallery-next");
+      const slideCount = gallery.querySelectorAll(".gallery-slide").length;
+      
+      if (slideCount <= 1) return;
+      
+      let currentIndex = 0;
+      
+      function goToSlide(index) {
+        if (index < 0) index = slideCount - 1;
+        if (index >= slideCount) index = 0;
+        currentIndex = index;
+        if (track) track.style.transform = "translateX(-" + (currentIndex * 100) + "%)";
+        dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+      }
+      
+      if (prevBtn) {
+        prevBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          goToSlide(currentIndex - 1);
+        });
+      }
+      
+      if (nextBtn) {
+        nextBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          goToSlide(currentIndex + 1);
+        });
+      }
+      
+      // Touch swipe support
+      let touchStartX = 0;
+      gallery.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      
+      gallery.addEventListener("touchend", (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+          goToSlide(diff > 0 ? currentIndex + 1 : currentIndex - 1);
+        }
+      }, { passive: true });
+    });
+  }
+
   function bindHotelCards() {
     document.querySelectorAll(".hotel-list .dest-card, .hotel-list .hotel-card-v2").forEach((card) => {
       const name = hotelCardName(card);
@@ -529,12 +584,15 @@
       if (card.getAttribute("data-bound-hotel") === "1") return;
       card.setAttribute("data-bound-hotel", "1");
       card.addEventListener("click", (e) => {
+        // Don't navigate if clicking gallery controls
+        if (e.target.closest(".gallery-nav") || e.target.closest(".gallery-dot")) return;
         const hotelName = hotelCardName(card);
         if (!hotelName) return;
         e.preventDefault();
         window.open(klookWrap(hotelName), "_blank", "noopener");
       });
     });
+    bindGalleries();
   }
 
   function bindContinue() {
@@ -576,9 +634,21 @@
       const key = String((h && (h.id || h.hotelId)) || name).toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
+      
+      // Build photos array
+      let photos = [];
+      if (h && h.photos && Array.isArray(h.photos)) {
+        photos = h.photos.map(p => String(p));
+      } else if (h && h.photo) {
+        photos = [String(h.photo)];
+      } else if (h && h.image) {
+        photos = [String(h.image)];
+      }
+      
       out.push({
         name: name,
-        image: h && h.image ? String(h.image) : (h && h.photo ? String(h.photo) : ""),
+        image: photos[0] || "",
+        photos: photos,
         deepLink: h && h.deepLink ? String(h.deepLink) : "",
         provider: h && h.provider ? String(h.provider) : "",
         stars: h && h.stars ? Number(h.stars) : 0,
@@ -602,10 +672,35 @@
   function renderHotelArticle(hotel) {
     const name = displayHotelName(hotel);
     const safe = escapeHtml(name);
-    const image = hotel && hotel.image ? String(hotel.image) : "";
-    const photo = image
-      ? '<img src="' + escapeHtml(image) + '" alt="' + safe + '" loading="lazy" decoding="async" />'
-      : '';
+    
+    // Build photos array
+    let photos = [];
+    if (hotel && hotel.photos && hotel.photos.length > 0) {
+      photos = hotel.photos;
+    } else if (hotel && hotel.image) {
+      photos = [hotel.image];
+    }
+    
+    // Build gallery HTML
+    let galleryHtml = '<div class="hotel-card-gallery"><div class="gallery-track">';
+    if (photos.length > 0) {
+      photos.forEach((photoUrl, idx) => {
+        galleryHtml += '<div class="gallery-slide"><img src="' + escapeHtml(photoUrl) + '" alt="' + safe + (photos.length > 1 ? ' - Photo ' + (idx + 1) : '') + '" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" decoding="async" /></div>';
+      });
+    }
+    galleryHtml += '</div>';
+    
+    // Add dots and nav if multiple photos
+    if (photos.length > 1) {
+      galleryHtml += '<div class="gallery-dots">';
+      photos.forEach((_, idx) => {
+        galleryHtml += '<span class="gallery-dot' + (idx === 0 ? ' active' : '') + '" data-index="' + idx + '"></span>';
+      });
+      galleryHtml += '</div>';
+      galleryHtml += '<button class="gallery-nav gallery-prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>';
+      galleryHtml += '<button class="gallery-nav gallery-next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
+    }
+    galleryHtml += '</div>';
     
     let locationHtml = "";
     if (hotel && (hotel.district || hotel.city)) {
@@ -659,7 +754,7 @@
     }
     
     return '<a class="hotel-card-v2" href="#" data-hotel-name="' + safe + '">' +
-      '<div class="hotel-card-image">' + photo + '</div>' +
+      galleryHtml +
       '<div class="hotel-card-content">' +
       '<h3 class="hotel-card-name">' + safe + '</h3>' +
       locationHtml +

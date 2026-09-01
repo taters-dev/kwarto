@@ -130,8 +130,31 @@ export async function GET(request) {
         priceUSD = Math.round(priceBreakdown.gross_amount.value / 3);
       }
       
-      const photoUrl = hotel.main_photo_url || null;
-      const photo = photoUrl ? photoUrl.replace('/square60/', '/max300/') : null;
+      // Collect all available photos
+      const photos = [];
+      const mainPhotoUrl = hotel.main_photo_url || null;
+      if (mainPhotoUrl) {
+        photos.push(mainPhotoUrl.replace('/square60/', '/max500/'));
+      }
+      
+      // Try to get additional photos from property_photo_urls if available
+      if (hotel.property_photo_urls && Array.isArray(hotel.property_photo_urls)) {
+        hotel.property_photo_urls.forEach(url => {
+          if (url && !photos.includes(url)) {
+            photos.push(url.replace('/square60/', '/max500/'));
+          }
+        });
+      }
+      
+      // Also check for photos array in the response
+      if (hotel.photos && Array.isArray(hotel.photos)) {
+        hotel.photos.forEach(p => {
+          const url = p.url || p.photo_url || p;
+          if (typeof url === 'string' && !photos.includes(url)) {
+            photos.push(url.replace('/square60/', '/max500/'));
+          }
+        });
+      }
       
       return {
         id: hotel.hotel_id,
@@ -140,7 +163,8 @@ export async function GET(request) {
         stars: hotel.class || 0,
         rating: hotel.review_score || null,
         reviewCount: hotel.review_nr || 0,
-        photo: photo,
+        photo: photos[0] || null,
+        photos: photos.slice(0, 5),
         priceUSD: priceUSD,
         pricePHP: priceUSD ? Math.round(priceUSD * 57) : null,
         city: hotel.city_in_trans?.replace("in ", "") || destination.city_name || city,

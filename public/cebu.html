@@ -106,16 +106,107 @@
       card.href = "#";
       card.setAttribute("data-hotel-name", hotel.name);
       
-      // Image section
-      var imageWrap = document.createElement("div");
-      imageWrap.className = "hotel-card-image";
-      var img = document.createElement("img");
-      img.src = hotel.photo || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
-      img.alt = hotel.name;
-      img.loading = "lazy";
-      img.decoding = "async";
-      imageWrap.appendChild(img);
-      card.appendChild(imageWrap);
+      // Image gallery section
+      var gallery = document.createElement("div");
+      gallery.className = "hotel-card-gallery";
+      
+      var track = document.createElement("div");
+      track.className = "gallery-track";
+      
+      // Get photos array (API returns single photo, but structure supports multiple)
+      var photos = hotel.photos || (hotel.photo ? [hotel.photo] : []);
+      if (photos.length === 0) {
+        photos = ["https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80"];
+      }
+      
+      photos.forEach(function(photoUrl, idx) {
+        var slide = document.createElement("div");
+        slide.className = "gallery-slide";
+        var img = document.createElement("img");
+        img.src = photoUrl;
+        img.alt = hotel.name + (photos.length > 1 ? " - Photo " + (idx + 1) : "");
+        img.loading = idx === 0 ? "eager" : "lazy";
+        img.decoding = "async";
+        slide.appendChild(img);
+        track.appendChild(slide);
+      });
+      
+      gallery.appendChild(track);
+      
+      // Add dots indicator if multiple photos
+      if (photos.length > 1) {
+        var dots = document.createElement("div");
+        dots.className = "gallery-dots";
+        photos.forEach(function(_, idx) {
+          var dot = document.createElement("span");
+          dot.className = "gallery-dot" + (idx === 0 ? " active" : "");
+          dot.setAttribute("data-index", idx);
+          dots.appendChild(dot);
+        });
+        gallery.appendChild(dots);
+        
+        // Add navigation arrows
+        var prevBtn = document.createElement("button");
+        prevBtn.className = "gallery-nav gallery-prev";
+        prevBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
+        prevBtn.setAttribute("aria-label", "Previous photo");
+        gallery.appendChild(prevBtn);
+        
+        var nextBtn = document.createElement("button");
+        nextBtn.className = "gallery-nav gallery-next";
+        nextBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+        nextBtn.setAttribute("aria-label", "Next photo");
+        gallery.appendChild(nextBtn);
+        
+        // Gallery state
+        var currentIndex = 0;
+        var slideCount = photos.length;
+        
+        function goToSlide(index) {
+          if (index < 0) index = slideCount - 1;
+          if (index >= slideCount) index = 0;
+          currentIndex = index;
+          track.style.transform = "translateX(-" + (currentIndex * 100) + "%)";
+          var allDots = dots.querySelectorAll(".gallery-dot");
+          allDots.forEach(function(d, i) {
+            d.classList.toggle("active", i === currentIndex);
+          });
+        }
+        
+        prevBtn.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          goToSlide(currentIndex - 1);
+        });
+        
+        nextBtn.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          goToSlide(currentIndex + 1);
+        });
+        
+        // Touch swipe support
+        var touchStartX = 0;
+        var touchEndX = 0;
+        
+        gallery.addEventListener("touchstart", function(e) {
+          touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        gallery.addEventListener("touchend", function(e) {
+          touchEndX = e.changedTouches[0].screenX;
+          var diff = touchStartX - touchEndX;
+          if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+              goToSlide(currentIndex + 1);
+            } else {
+              goToSlide(currentIndex - 1);
+            }
+          }
+        }, { passive: true });
+      }
+      
+      card.appendChild(gallery);
       
       // Content section
       var content = document.createElement("div");

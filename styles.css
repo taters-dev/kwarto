@@ -1492,7 +1492,8 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   transform: translateY(-2px);
 }
 
-.hotel-card-image {
+/* Hotel card image gallery */
+.hotel-card-gallery {
   position: relative;
   width: 100%;
   height: 200px;
@@ -1500,15 +1501,110 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   background: var(--paper-2);
 }
 
-.hotel-card-image img {
+.gallery-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.3s ease-out;
+}
+
+.gallery-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.gallery-slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
 }
 
-.hotel-card-v2:hover .hotel-card-image img {
+.hotel-card-v2:hover .gallery-slide img {
   transform: scale(1.05);
+}
+
+/* Gallery navigation arrows */
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-nav svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gallery-prev {
+  left: 8px;
+}
+
+.gallery-next {
+  right: 8px;
+}
+
+.hotel-card-v2:hover .gallery-nav {
+  opacity: 1;
+}
+
+.gallery-nav:hover {
+  background: #fff;
+}
+
+/* Gallery dots indicator */
+.gallery-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.gallery-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.gallery-dot.active {
+  background: #fff;
+  transform: scale(1.2);
+}
+
+/* Touch device: always show dots, hide arrows */
+@media (hover: none) {
+  .gallery-nav {
+    display: none;
+  }
+  
+  .gallery-dots {
+    opacity: 1;
+  }
 }
 
 .hotel-card-content {
