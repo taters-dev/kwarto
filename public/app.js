@@ -153,30 +153,22 @@
     return { checkIn, checkOut, guests, children, childages };
   }
 
-  function tpWrap(destUrl, campaignId, p) {
-    const u = new URL("https://tp.media/r");
-    u.searchParams.set("campaign_id", String(campaignId));
-    u.searchParams.set("marker", "771660");
-    u.searchParams.set("p", String(p));
-    u.searchParams.set("trs", "568222");
-    u.searchParams.set("u", destUrl);
-    return u.toString();
-  }
+  const BOOKING_AFFILIATE_ID = "";
 
-  function klookDest(query) {
-    const { checkIn, checkOut, guests, children } = stayDates();
-    const u = new URL("https://www.klook.com/hotels/");
-    if (query) u.searchParams.set("keyword", query);
-    if (checkIn) u.searchParams.set("check_in", checkIn);
-    if (checkOut) u.searchParams.set("check_out", checkOut);
-    u.searchParams.set("adult_num", String(guests || 2));
-    u.searchParams.set("child_num", String(children || 0));
-    u.searchParams.set("room_num", "1");
+  function bookingUrl(query, city) {
+    const { checkIn, checkOut, guests } = stayDates();
+    const u = new URL("https://www.booking.com/searchresults.html");
+    let searchQuery = query || "";
+    if (city && searchQuery.toLowerCase().indexOf(city.toLowerCase()) === -1) {
+      searchQuery = searchQuery + " " + city;
+    }
+    if (searchQuery) u.searchParams.set("ss", searchQuery.trim());
+    if (checkIn) u.searchParams.set("checkin", checkIn);
+    if (checkOut) u.searchParams.set("checkout", checkOut);
+    u.searchParams.set("group_adults", String(guests || 2));
+    u.searchParams.set("no_rooms", "1");
+    if (BOOKING_AFFILIATE_ID) u.searchParams.set("aid", BOOKING_AFFILIATE_ID);
     return u.toString();
-  }
-
-  function klookWrap(query) {
-    return tpWrap(klookDest(query), 137, 4110);
   }
 
   function destQuery(dest, typed) {
@@ -644,13 +636,14 @@
       if (name && !card.getAttribute("data-hotel-name")) card.setAttribute("data-hotel-name", name);
       if (card.getAttribute("data-bound-hotel") === "1") return;
       card.setAttribute("data-bound-hotel", "1");
+      card.setAttribute("title", "Search for " + name + " on Booking.com");
       card.addEventListener("click", (e) => {
         // Don't navigate if clicking gallery controls
         if (e.target.closest(".gallery-nav") || e.target.closest(".gallery-dot")) return;
         const hotelName = hotelCardName(card);
         if (!hotelName) return;
         e.preventDefault();
-        window.open(klookWrap(hotelName), "_blank", "noopener");
+        window.open(bookingUrl(hotelName, hotelPlace), "_blank", "noopener");
       });
     });
     bindGalleries();
@@ -661,7 +654,8 @@
       if (el.getAttribute("data-bound-continue") === "1") return;
       el.setAttribute("data-bound-continue", "1");
       const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
-      const url = klookWrap(q);
+      const city = el.getAttribute("data-city") || hotelPlace || "Cebu";
+      const url = bookingUrl(q, city);
       if (el.tagName === "A") {
         el.href = url;
         el.target = "_blank";
@@ -789,7 +783,7 @@
       footerHtml = '<div class="hotel-card-footer">' + footerParts.join("") + '</div>';
     }
     
-    return '<a class="hotel-card-v2" href="#" data-hotel-name="' + safe + '">' +
+    return '<a class="hotel-card-v2" href="' + escapeHtml(bookingUrl(name, hotelPlace)) + '" target="_blank" rel="noopener" data-hotel-name="' + safe + '" title="Search for ' + safe + ' on Booking.com">' +
       galleryHtml +
       '<div class="hotel-card-content">' +
       '<h3 class="hotel-card-name">' + safe + '</h3>' +
@@ -804,11 +798,11 @@
     const q = hotelName || place;
     const safeQ = escapeHtml(q);
     const status = hotelName
-      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Klook. A full city list needs a partner hotel feed."
-      : "Hotels in " + escapeHtml(place) + " will list here when Klook sends a city feed. Compare on Klook with your dates.";
+      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Booking.com. A full city list needs a partner hotel feed."
+      : "Hotels in " + escapeHtml(place) + " will list here when we have a city feed. Compare on Booking.com with your dates.";
     return '<div class="hotel-empty" data-city-empty>' +
       '<p class="hotel-list-status">' + status + "</p>" +
-      '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Klook</a>' +
+      '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Booking.com</a>' +
       "</div>";
   }
 

@@ -52,8 +52,8 @@ if (index.includes('class="nc-nearby"')) {
 const cebu = readFileSync(join("public", "cebu.html"), "utf8");
 const results = readFileSync(join("public", "results.html"), "utf8");
 const hotel = readFileSync(join("public", "hotel.html"), "utf8");
-if (hotel.includes("Agoda") || hotel.includes("agoda.com") || !hotel.includes("Continue on Klook") || !hotel.includes('data-hotel-name="Coral House Mactan"')) {
-  console.error("prep abort: hotel.html must continue on Klook, not Agoda");
+if (hotel.includes("Agoda") || hotel.includes("agoda.com") || !hotel.includes("Continue on Booking.com") || !hotel.includes('data-hotel-name="Coral House Mactan"')) {
+  console.error("prep abort: hotel.html must continue on Booking.com, not Agoda");
   process.exit(1);
 }
 if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
@@ -121,8 +121,8 @@ if (cebu.includes("Agoda") || cebu.includes("Trip.com") || cebu.includes("Expedi
   console.error("prep abort: other OTAs must be removed from cebu.html");
   process.exit(1);
 }
-if (!cebu.includes("book on Klook") || cebu.includes("Two partners") || cebu.includes("Three partners") || cebu.includes("Book on Klook.")) {
-  console.error("prep abort: Cebu copy must send hotels to Klook");
+if (!cebu.includes("book on Booking.com") || cebu.includes("Two partners") || cebu.includes("Three partners")) {
+  console.error("prep abort: Cebu copy must send hotels to Booking.com");
   process.exit(1);
 }
 if (cebu.includes("Coral House") || /class="dest-card"[\s\S]{0,400}data-usd=/.test(cebu)) {
@@ -229,7 +229,7 @@ if (!appjs.includes("function destNow(typed)") || !appjs.includes("function city
   console.error("prep abort: Find My Hotel must navigate to a Kwarto city page");
   process.exit(1);
 }
-if (appjs.includes("function resultsListHref") || appjs.includes("location.href = resultsListHref") || appjs.includes("results.html\"")) {
+if (appjs.includes("function resultsListHref") || appjs.includes("location.href = resultsListHref") || appjs.includes('"/results.html"') || appjs.includes("'/results.html'")) {
   console.error("prep abort: non-Cebu search must use city URLs, not results.html");
   process.exit(1);
 }
@@ -246,7 +246,7 @@ if (appjs.includes("CITY_HOTELS") || appjs.includes("function curatedHotels")) {
   console.error("prep abort: curated hotel-name lists must not drive results");
   process.exit(1);
 }
-if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count") || !results.includes("data-hotel-pager") || !results.includes("data-page-next") || !results.includes("data-city-page") || !results.includes("book on Klook")) {
+if (!results.includes("Kwarto") || !results.includes('class="hotel-list"') || !results.includes("data-results-list") || !results.includes("data-hotel-count") || !results.includes("data-hotel-pager") || !results.includes("data-page-next") || !results.includes("data-city-page") || !results.includes("book on Booking.com")) {
   console.error("prep abort: results.html must be a Kwarto city hotel list with pager");
   process.exit(1);
 }
@@ -262,16 +262,16 @@ if (!results.includes('src="/cal.js?v=') || !results.includes('src="/guests.js?v
   console.error("prep abort: results.html scripts must be root-absolute");
   process.exit(1);
 }
-if (!appjs.includes("function tpWrap") || !appjs.includes("tp.media") || !appjs.includes("www.klook.com/hotels/") || !appjs.includes("function klookWrap") || !appjs.includes("window.open(klookWrap(")) {
-  console.error("prep abort: app.js must contain klook wrap");
+if (!appjs.includes("function bookingUrl") || !appjs.includes("www.booking.com/searchresults.html") || !appjs.includes("BOOKING_AFFILIATE_ID") || !appjs.includes("window.open(bookingUrl(")) {
+  console.error("prep abort: app.js must contain booking.com URL builder");
   process.exit(1);
 }
 if (appjs.includes("kkday") || appjs.includes("kkday.com") || appjs.includes("function kkdayWrap")) {
   console.error("prep abort: KKday wrap must be removed; KKday has no PH inventory");
   process.exit(1);
 }
-if (!appjs.includes("campaign_id")) {
-  console.error("prep abort: travelpayouts wrap missing");
+if (appjs.includes("klook.com") || appjs.includes("function klookWrap") || appjs.includes("function klookDest")) {
+  console.error("prep abort: Klook functions must be removed; now using Booking.com");
   process.exit(1);
 }
 if (appjs.includes("agodaUrl") || (appjs.includes("cid=0") && appjs.includes("www.agoda.com/search"))) {

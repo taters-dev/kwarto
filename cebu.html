@@ -48,7 +48,7 @@
       <div class="wrap">
         <div class="section-head">
           <h2 data-results-heading>Hotels in Cebu</h2>
-          <p>Tap a hotel to book on Klook. Results show similar options.</p>
+          <p>Tap a hotel to book on Booking.com. Results show similar options.</p>
         </div>
         <div class="hotel-list" data-results-list>
           <p class="hotel-list-status">Finding hotels…</p>
@@ -75,7 +75,7 @@
       <div>
         <a class="nc-logo" href="index.html"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
         <p>Support — hello@staytuloy.com</p>
-        <span class="tiny">Live rates from Booking.com. Search and compare on Klook.</span>
+        <span class="tiny">Live rates and booking via Booking.com.</span>
       </div>
       <p>Made for Filipinos who book the trip, then the room.</p>
     </div>
@@ -100,49 +100,35 @@
       return "₱" + Math.round(usd * RATE).toLocaleString("en-PH");
     }
     
-    function tpWrap(destUrl, campaignId, p) {
-      var u = new URL("https://tp.media/r");
-      u.searchParams.set("campaign_id", String(campaignId));
-      u.searchParams.set("marker", "771660");
-      u.searchParams.set("p", String(p));
-      u.searchParams.set("trs", "568222");
-      u.searchParams.set("u", destUrl);
-      return u.toString();
-    }
+    var BOOKING_AFFILIATE_ID = "";
     
-    function klookDest(query, city) {
+    function bookingUrl(query, city) {
       var checkIn = document.getElementById("checkin");
       var checkOut = document.getElementById("checkout");
       var guests = document.getElementById("guests");
-      var children = document.getElementById("children");
-      var u = new URL("https://www.klook.com/hotels/");
-      // Include city in search to improve match accuracy
+      var u = new URL("https://www.booking.com/searchresults.html");
       var searchQuery = query || "";
       if (city && searchQuery.toLowerCase().indexOf(city.toLowerCase()) === -1) {
         searchQuery = searchQuery + " " + city;
       }
-      if (searchQuery) u.searchParams.set("keyword", searchQuery.trim());
-      if (checkIn && checkIn.value) u.searchParams.set("check_in", checkIn.value);
-      if (checkOut && checkOut.value) u.searchParams.set("check_out", checkOut.value);
-      u.searchParams.set("adult_num", String((guests && guests.value) || 2));
-      u.searchParams.set("child_num", String((children && children.value) || 0));
-      u.searchParams.set("room_num", "1");
+      if (searchQuery) u.searchParams.set("ss", searchQuery.trim());
+      if (checkIn && checkIn.value) u.searchParams.set("checkin", checkIn.value);
+      if (checkOut && checkOut.value) u.searchParams.set("checkout", checkOut.value);
+      u.searchParams.set("group_adults", String((guests && guests.value) || 2));
+      u.searchParams.set("no_rooms", "1");
+      if (BOOKING_AFFILIATE_ID) u.searchParams.set("aid", BOOKING_AFFILIATE_ID);
       return u.toString();
-    }
-    
-    function klookWrap(query, city) {
-      return tpWrap(klookDest(query, city || "Cebu"), 137, 4110);
     }
     
     function createHotelCard(hotel, cityName) {
       var card = document.createElement("a");
       card.className = "hotel-card-v2";
-      card.href = klookWrap(hotel.name, cityName || hotel.city || "Cebu");
+      card.href = bookingUrl(hotel.name, cityName || hotel.city || "Cebu");
       card.target = "_blank";
       card.rel = "noopener";
       card.setAttribute("data-hotel-name", hotel.name);
       card.setAttribute("data-hotel-id", hotel.id);
-      card.setAttribute("title", "Search for " + hotel.name + " on Klook");
+      card.setAttribute("title", "Search for " + hotel.name + " on Booking.com");
       
       card.addEventListener("click", function(e) {
         if (e.target.closest && (e.target.closest(".gallery-nav") || e.target.closest(".gallery-dot"))) {
