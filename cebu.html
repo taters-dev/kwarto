@@ -102,7 +102,7 @@
     
     function createHotelCard(hotel) {
       var a = document.createElement("a");
-      a.className = "dest-card";
+      a.className = "dest-card hotel-card-enhanced";
       a.href = "#";
       a.setAttribute("data-hotel-name", hotel.name);
       
@@ -120,15 +120,66 @@
       h3.textContent = hotel.name;
       meta.appendChild(h3);
       
+      if (hotel.district || hotel.city) {
+        var location = document.createElement("p");
+        location.className = "hotel-location";
+        location.textContent = hotel.district || hotel.city;
+        meta.appendChild(location);
+      }
+      
+      if (hotel.stars && hotel.stars > 0) {
+        var starsEl = document.createElement("div");
+        starsEl.className = "hotel-stars";
+        for (var i = 0; i < Math.min(hotel.stars, 5); i++) {
+          starsEl.innerHTML += '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg>';
+        }
+        meta.appendChild(starsEl);
+      }
+      
+      var badges = document.createElement("div");
+      badges.className = "hotel-badges";
+      
+      if (hotel.hasFreeCancellation) {
+        var cancelBadge = document.createElement("span");
+        cancelBadge.className = "hotel-badge badge-cancel";
+        cancelBadge.textContent = "Free cancellation";
+        badges.appendChild(cancelBadge);
+      }
+      
+      if (hotel.hasFreeParking) {
+        var parkingBadge = document.createElement("span");
+        parkingBadge.className = "hotel-badge badge-parking";
+        parkingBadge.textContent = "Free parking";
+        badges.appendChild(parkingBadge);
+      }
+      
+      if (badges.children.length > 0) {
+        meta.appendChild(badges);
+      }
+      
+      var priceRow = document.createElement("div");
+      priceRow.className = "hotel-price-row";
+      
       if (hotel.priceUSD) {
-        var price = document.createElement("p");
+        var price = document.createElement("span");
         price.className = "hotel-price";
         price.setAttribute("data-usd", hotel.priceUSD);
         price.textContent = "from " + formatPrice(hotel.priceUSD, currency());
-        if (hotel.rating) {
-          price.textContent += " · ★ " + hotel.rating;
+        priceRow.appendChild(price);
+      }
+      
+      if (hotel.rating) {
+        var ratingEl = document.createElement("span");
+        ratingEl.className = "hotel-rating";
+        ratingEl.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg> ' + hotel.rating;
+        if (hotel.reviewCount) {
+          ratingEl.innerHTML += ' <span class="review-count">(' + hotel.reviewCount.toLocaleString() + ')</span>';
         }
-        meta.appendChild(price);
+        priceRow.appendChild(ratingEl);
+      }
+      
+      if (priceRow.children.length > 0) {
+        meta.appendChild(priceRow);
       }
       
       a.appendChild(meta);

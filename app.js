@@ -578,9 +578,17 @@
       seen.add(key);
       out.push({
         name: name,
-        image: h && h.image ? String(h.image) : "",
+        image: h && h.image ? String(h.image) : (h && h.photo ? String(h.photo) : ""),
         deepLink: h && h.deepLink ? String(h.deepLink) : "",
-        provider: h && h.provider ? String(h.provider) : ""
+        provider: h && h.provider ? String(h.provider) : "",
+        stars: h && h.stars ? Number(h.stars) : 0,
+        rating: h && h.rating ? Number(h.rating) : null,
+        reviewCount: h && h.reviewCount ? Number(h.reviewCount) : 0,
+        priceUSD: h && h.priceUSD ? Number(h.priceUSD) : null,
+        district: h && h.district ? String(h.district) : "",
+        city: h && h.city ? String(h.city) : "",
+        hasFreeCancellation: !!(h && h.hasFreeCancellation),
+        hasFreeParking: !!(h && h.hasFreeParking)
       });
     });
     return out;
@@ -595,17 +603,64 @@
     const name = displayHotelName(hotel);
     const safe = escapeHtml(name);
     const image = hotel && hotel.image ? String(hotel.image) : "";
-    const cityLine = hotelPlace
-      ? '<p class="why">' + escapeHtml(hotelPlace) + "</p>"
-      : "";
     const photo = image
       ? '<img src="' + escapeHtml(image) + '" alt="" />'
       : '<div class="hotel-photo-gap" aria-hidden="true"></div>';
-    return '<article class="dest-card" data-hotel-name="' + safe + '">' +
+    
+    let locationLine = "";
+    if (hotel && (hotel.district || hotel.city)) {
+      locationLine = '<p class="hotel-location">' + escapeHtml(hotel.district || hotel.city) + '</p>';
+    } else if (hotelPlace) {
+      locationLine = '<p class="hotel-location">' + escapeHtml(hotelPlace) + '</p>';
+    }
+    
+    let starsHtml = "";
+    if (hotel && hotel.stars && hotel.stars > 0) {
+      const starCount = Math.min(hotel.stars, 5);
+      const starSvg = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg>';
+      starsHtml = '<div class="hotel-stars">' + starSvg.repeat(starCount) + '</div>';
+    }
+    
+    let badgesHtml = "";
+    const badges = [];
+    if (hotel && hotel.hasFreeCancellation) {
+      badges.push('<span class="hotel-badge badge-cancel">Free cancellation</span>');
+    }
+    if (hotel && hotel.hasFreeParking) {
+      badges.push('<span class="hotel-badge badge-parking">Free parking</span>');
+    }
+    if (badges.length > 0) {
+      badgesHtml = '<div class="hotel-badges">' + badges.join("") + '</div>';
+    }
+    
+    let priceRowHtml = "";
+    const priceRowParts = [];
+    if (hotel && hotel.priceUSD) {
+      const cur = currency();
+      const priceText = cur === "USD"
+        ? "$" + hotel.priceUSD.toLocaleString("en-US")
+        : "₱" + Math.round(hotel.priceUSD * RATE).toLocaleString("en-PH");
+      priceRowParts.push('<span class="hotel-price" data-usd="' + hotel.priceUSD + '">from ' + priceText + '</span>');
+    }
+    if (hotel && hotel.rating) {
+      let ratingText = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg> ' + hotel.rating;
+      if (hotel.reviewCount) {
+        ratingText += ' <span class="review-count">(' + hotel.reviewCount.toLocaleString() + ')</span>';
+      }
+      priceRowParts.push('<span class="hotel-rating">' + ratingText + '</span>');
+    }
+    if (priceRowParts.length > 0) {
+      priceRowHtml = '<div class="hotel-price-row">' + priceRowParts.join("") + '</div>';
+    }
+    
+    return '<article class="dest-card hotel-card-enhanced" data-hotel-name="' + safe + '">' +
       photo +
       '<div class="meta">' +
       "<h3>" + safe + "</h3>" +
-      cityLine +
+      locationLine +
+      starsHtml +
+      badgesHtml +
+      priceRowHtml +
       "</div></article>";
   }
 
