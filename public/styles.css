@@ -1607,6 +1607,45 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   }
 }
 
+/* Swipe hint indicator */
+.gallery-swipe-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  animation: swipe-hint-pulse 2s ease-in-out infinite;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-swipe-hint svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes swipe-hint-pulse {
+  0%, 100% { opacity: 0.7; transform: translateY(-50%) translateX(0); }
+  50% { opacity: 1; transform: translateY(-50%) translateX(3px); }
+}
+
+.hotel-card-gallery[data-photos-loaded="true"] .gallery-swipe-hint,
+.hotel-card-gallery[data-photos-loaded="single"] .gallery-swipe-hint,
+.hotel-card-gallery[data-photos-loaded="error"] .gallery-swipe-hint {
+  display: none;
+}
+
 .hotel-card-content {
   display: flex;
   flex-direction: column;

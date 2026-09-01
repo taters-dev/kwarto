@@ -73,113 +73,6 @@ async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
   }
 }
 
-async function fetchHotelPhotos(hotelIds) {
-  if (!RAPIDAPI_KEY || !hotelIds || hotelIds.length === 0) return {};
-  
-  const photosMap = {};
-  
-  function extractPhotoUrl(photo) {
-    // Try different URL field names used by Booking.com
-    if (typeof photo === 'string') return photo;
-    return photo.url_max || 
-           photo.url_1440 || 
-           photo.url_original || 
-           photo.large_url ||
-           photo.photo_url ||
-           (photo.url_square60 ? photo.url_square60.replace('/square60/', '/max500/') : null) ||
-           photo.url ||
-           null;
-  }
-  
-  // Fetch photos for first 4 hotels in parallel (to avoid too many API calls)
-  const hotelIdsToFetch = hotelIds.slice(0, 4);
-  
-  let rawResponses = [];
-  
-  const fetchPromises = hotelIdsToFetch.map(async (hotelId) => {
-    try {
-      const params = new URLSearchParams({
-        hotel_ids: String(hotelId),
-        languagecode: "en-us"
-      });
-      
-      const url = `https://${RAPIDAPI_HOST}/properties/get-hotel-photos?${params.toString()}`;
-      
-      const r = await fetch(url, {
-        headers: {
-          "x-rapidapi-host": RAPIDAPI_HOST,
-          "x-rapidapi-key": RAPIDAPI_KEY
-        },
-        cache: "no-store"
-      });
-      
-      if (!r.ok) return { hotelId, photos: [], raw: { error: r.status } };
-      
-      const data = await r.json();
-      
-      // Store raw response for debugging (first hotel only)
-      if (rawResponses.length === 0) {
-        rawResponses.push({ hotelId, keys: data ? Object.keys(data) : null, sample: JSON.stringify(data).slice(0, 500) });
-      }
-      
-      if (!data) return { hotelId, photos: [] };
-      
-      // Parse photos from response
-      // Format: { url_prefix: "https://cf.bstatic.com", data: { "hotel_id": [[photo_arrays]] } }
-      // Each photo array: [1, [], photo_id, [tags], "/path/max1024.jpg", "/path/max300.jpg", ...]
-      let photoUrls = [];
-      
-      const urlPrefix = data.url_prefix || "https://cf.bstatic.com";
-      const hotelData = data.data && data.data[hotelId];
-      
-      if (hotelData && Array.isArray(hotelData)) {
-        hotelData.slice(0, 5).forEach(photoArr => {
-          if (Array.isArray(photoArr)) {
-            let foundUrl = null;
-            // Find URL path in the array (usually at index 4 or 5)
-            for (let i = 4; i < photoArr.length && !foundUrl; i++) {
-              const item = photoArr[i];
-              if (typeof item === 'string' && item.startsWith('/xdata/images/')) {
-                // Prefer max1024 or max500 size
-                if (item.includes('max1024') || item.includes('max500')) {
-                  foundUrl = urlPrefix + item;
-                }
-              }
-            }
-            // Fallback: just take the first URL path found
-            if (!foundUrl) {
-              for (let i = 4; i < photoArr.length && !foundUrl; i++) {
-                const item = photoArr[i];
-                if (typeof item === 'string' && item.startsWith('/')) {
-                  foundUrl = urlPrefix + item;
-                }
-              }
-            }
-            if (foundUrl) {
-              photoUrls.push(foundUrl);
-            }
-          }
-        });
-      }
-      
-      return { hotelId, photos: photoUrls };
-    } catch (e) {
-      console.error(`Photo fetch error for hotel ${hotelId}:`, e);
-      return { hotelId, photos: [], error: e.message };
-    }
-  });
-  
-  const results = await Promise.all(fetchPromises);
-  
-  results.forEach(({ hotelId, photos }) => {
-    if (photos.length > 0) {
-      photosMap[hotelId] = photos;
-    }
-  });
-  
-  return { photosMap, rawResponses };
-}
-
 export async function GET(request) {
   const params = new URL(request.url).searchParams;
   const checkIn = params.get("checkIn") || formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
@@ -228,11 +121,8 @@ export async function GET(request) {
     .filter(item => item.type === "property_card" && item.hotel_id)
     .slice(0, 12);
   
-  // Get hotel IDs for photo fetch
+  // Photos are now fetched lazily via /api/hotels/photos endpoint
   const hotelIds = hotelItems.map(h => h.hotel_id);
-  
-  // Fetch photos for all hotels in parallel
-  const { photosMap, rawResponses } = await fetchHotelPhotos(hotelIds);
   
   const results = hotelItems.map(hotel => {
       const priceBreakdown = hotel.composite_price_breakdown;
@@ -244,20 +134,9 @@ export async function GET(request) {
         priceUSD = Math.round(priceBreakdown.gross_amount.value / 3);
       }
       
-      // Start with main photo from list endpoint
-      const photos = [];
+      // Main photo from list endpoint - additional photos fetched lazily
       const mainPhotoUrl = hotel.main_photo_url || null;
-      if (mainPhotoUrl) {
-        photos.push(mainPhotoUrl.replace('/square60/', '/max500/'));
-      }
-      
-      // Add photos from the photos endpoint
-      const additionalPhotos = photosMap[hotel.hotel_id] || [];
-      additionalPhotos.forEach(url => {
-        if (url && !photos.includes(url)) {
-          photos.push(url);
-        }
-      });
+      const photo = mainPhotoUrl ? mainPhotoUrl.replace('/square60/', '/max500/') : null;
       
       return {
         id: hotel.hotel_id,
@@ -266,8 +145,7 @@ export async function GET(request) {
         stars: hotel.class || 0,
         rating: hotel.review_score || null,
         reviewCount: hotel.review_nr || 0,
-        photo: photos[0] || null,
-        photos: photos.slice(0, 5),
+        photo: photo,
         priceUSD: priceUSD,
         pricePHP: priceUSD ? Math.round(priceUSD * 57) : null,
         city: hotel.city_in_trans?.replace("in ", "") || destination.city_name || city,
@@ -278,10 +156,7 @@ export async function GET(request) {
       };
     });
   
-  // Check if debug mode is requested
-  const debug = params.get("debug") === "1";
-  
-  const response = {
+  return Response.json({
     checkIn,
     checkOut,
     currency,
@@ -290,18 +165,5 @@ export async function GET(request) {
     totalCount: data.primary_count || results.length,
     hotels: results,
     hasKey: !!RAPIDAPI_KEY
-  };
-  
-  if (debug) {
-    response.debug = {
-      hotelIds: hotelIds.slice(0, 4),
-      photosFound: Object.keys(photosMap).length,
-      hotelsWithMultiplePhotos: Object.entries(photosMap)
-        .filter(([_, photos]) => photos.length > 1)
-        .map(([id, photos]) => ({ id, count: photos.length })),
-      rawApiResponse: rawResponses[0] || null
-    };
-  }
-  
-  return Response.json(response);
+  });
 }

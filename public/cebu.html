@@ -105,106 +105,145 @@
       card.className = "hotel-card-v2";
       card.href = "#";
       card.setAttribute("data-hotel-name", hotel.name);
+      card.setAttribute("data-hotel-id", hotel.id);
       
       // Image gallery section
       var gallery = document.createElement("div");
       gallery.className = "hotel-card-gallery";
+      gallery.setAttribute("data-photos-loaded", "false");
       
       var track = document.createElement("div");
       track.className = "gallery-track";
       
-      // Get photos array (API returns single photo, but structure supports multiple)
-      var photos = hotel.photos || (hotel.photo ? [hotel.photo] : []);
-      if (photos.length === 0) {
-        photos = ["https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80"];
-      }
+      // Start with single photo - more photos loaded on interaction
+      var initialPhoto = hotel.photo || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
       
-      photos.forEach(function(photoUrl, idx) {
-        var slide = document.createElement("div");
-        slide.className = "gallery-slide";
-        var img = document.createElement("img");
-        img.src = photoUrl;
-        img.alt = hotel.name + (photos.length > 1 ? " - Photo " + (idx + 1) : "");
-        img.loading = idx === 0 ? "eager" : "lazy";
-        img.decoding = "async";
-        slide.appendChild(img);
-        track.appendChild(slide);
-      });
+      var slide = document.createElement("div");
+      slide.className = "gallery-slide";
+      var img = document.createElement("img");
+      img.src = initialPhoto;
+      img.alt = hotel.name;
+      img.loading = "eager";
+      img.decoding = "async";
+      slide.appendChild(img);
+      track.appendChild(slide);
       
       gallery.appendChild(track);
       
-      // Add dots indicator if multiple photos
-      if (photos.length > 1) {
-        var dots = document.createElement("div");
-        dots.className = "gallery-dots";
-        photos.forEach(function(_, idx) {
-          var dot = document.createElement("span");
-          dot.className = "gallery-dot" + (idx === 0 ? " active" : "");
-          dot.setAttribute("data-index", idx);
-          dots.appendChild(dot);
-        });
-        gallery.appendChild(dots);
+      // Add swipe hint indicator
+      var swipeHint = document.createElement("div");
+      swipeHint.className = "gallery-swipe-hint";
+      swipeHint.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+      gallery.appendChild(swipeHint);
+      
+      // Lazy load photos on first interaction
+      var photosLoaded = false;
+      var currentIndex = 0;
+      var photos = [initialPhoto];
+      
+      function loadPhotos() {
+        if (photosLoaded || !hotel.id) return;
+        photosLoaded = true;
+        gallery.setAttribute("data-photos-loaded", "loading");
         
-        // Add navigation arrows
-        var prevBtn = document.createElement("button");
-        prevBtn.className = "gallery-nav gallery-prev";
-        prevBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
-        prevBtn.setAttribute("aria-label", "Previous photo");
-        gallery.appendChild(prevBtn);
-        
-        var nextBtn = document.createElement("button");
-        nextBtn.className = "gallery-nav gallery-next";
-        nextBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
-        nextBtn.setAttribute("aria-label", "Next photo");
-        gallery.appendChild(nextBtn);
-        
-        // Gallery state
-        var currentIndex = 0;
-        var slideCount = photos.length;
-        
-        function goToSlide(index) {
-          if (index < 0) index = slideCount - 1;
-          if (index >= slideCount) index = 0;
-          currentIndex = index;
-          track.style.transform = "translateX(-" + (currentIndex * 100) + "%)";
-          var allDots = dots.querySelectorAll(".gallery-dot");
-          allDots.forEach(function(d, i) {
-            d.classList.toggle("active", i === currentIndex);
-          });
-        }
-        
-        prevBtn.addEventListener("click", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          goToSlide(currentIndex - 1);
-        });
-        
-        nextBtn.addEventListener("click", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          goToSlide(currentIndex + 1);
-        });
-        
-        // Touch swipe support
-        var touchStartX = 0;
-        var touchEndX = 0;
-        
-        gallery.addEventListener("touchstart", function(e) {
-          touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-        
-        gallery.addEventListener("touchend", function(e) {
-          touchEndX = e.changedTouches[0].screenX;
-          var diff = touchStartX - touchEndX;
-          if (Math.abs(diff) > 50) {
-            if (diff > 0) {
-              goToSlide(currentIndex + 1);
+        fetch("/api/hotels/photos?hotelId=" + hotel.id)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.photos && data.photos.length > 1) {
+              photos = data.photos;
+              
+              // Clear and rebuild track with all photos
+              track.innerHTML = "";
+              photos.forEach(function(photoUrl, idx) {
+                var newSlide = document.createElement("div");
+                newSlide.className = "gallery-slide";
+                var newImg = document.createElement("img");
+                newImg.src = photoUrl;
+                newImg.alt = hotel.name + " - Photo " + (idx + 1);
+                newImg.loading = idx === 0 ? "eager" : "lazy";
+                newImg.decoding = "async";
+                newSlide.appendChild(newImg);
+                track.appendChild(newSlide);
+              });
+              
+              // Add dots
+              var dots = document.createElement("div");
+              dots.className = "gallery-dots";
+              photos.forEach(function(_, idx) {
+                var dot = document.createElement("span");
+                dot.className = "gallery-dot" + (idx === 0 ? " active" : "");
+                dots.appendChild(dot);
+              });
+              gallery.appendChild(dots);
+              
+              // Add navigation arrows
+              var prevBtn = document.createElement("button");
+              prevBtn.className = "gallery-nav gallery-prev";
+              prevBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
+              gallery.appendChild(prevBtn);
+              
+              var nextBtn = document.createElement("button");
+              nextBtn.className = "gallery-nav gallery-next";
+              nextBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+              gallery.appendChild(nextBtn);
+              
+              // Remove swipe hint
+              if (swipeHint.parentNode) swipeHint.parentNode.removeChild(swipeHint);
+              
+              prevBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex - 1);
+              });
+              
+              nextBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex + 1);
+              });
+              
+              gallery.setAttribute("data-photos-loaded", "true");
             } else {
-              goToSlide(currentIndex - 1);
+              // No additional photos available
+              gallery.setAttribute("data-photos-loaded", "single");
+              if (swipeHint.parentNode) swipeHint.parentNode.removeChild(swipeHint);
             }
-          }
-        }, { passive: true });
+          })
+          .catch(function() {
+            gallery.setAttribute("data-photos-loaded", "error");
+            if (swipeHint.parentNode) swipeHint.parentNode.removeChild(swipeHint);
+          });
       }
+      
+      function goToSlide(index) {
+        if (index < 0) index = photos.length - 1;
+        if (index >= photos.length) index = 0;
+        currentIndex = index;
+        track.style.transform = "translateX(-" + (currentIndex * 100) + "%)";
+        var allDots = gallery.querySelectorAll(".gallery-dot");
+        allDots.forEach(function(d, i) {
+          d.classList.toggle("active", i === currentIndex);
+        });
+      }
+      
+      // Touch swipe support - also triggers lazy load
+      var touchStartX = 0;
+      
+      gallery.addEventListener("touchstart", function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        loadPhotos();
+      }, { passive: true });
+      
+      gallery.addEventListener("touchend", function(e) {
+        var touchEndX = e.changedTouches[0].screenX;
+        var diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50 && photos.length > 1) {
+          goToSlide(diff > 0 ? currentIndex + 1 : currentIndex - 1);
+        }
+      }, { passive: true });
+      
+      // Mouse hover also triggers lazy load
+      gallery.addEventListener("mouseenter", loadPhotos);
       
       card.appendChild(gallery);
       

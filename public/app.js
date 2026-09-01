@@ -528,52 +528,113 @@
       gallery.setAttribute("data-bound-gallery", "1");
       
       const track = gallery.querySelector(".gallery-track");
-      const dots = gallery.querySelectorAll(".gallery-dot");
-      const prevBtn = gallery.querySelector(".gallery-prev");
-      const nextBtn = gallery.querySelector(".gallery-next");
-      const slideCount = gallery.querySelectorAll(".gallery-slide").length;
-      
-      if (slideCount <= 1) return;
-      
+      const hotelId = gallery.getAttribute("data-hotel-id");
+      let photos = [];
       let currentIndex = 0;
+      let photosLoaded = false;
       
       function goToSlide(index) {
-        if (index < 0) index = slideCount - 1;
-        if (index >= slideCount) index = 0;
+        if (photos.length <= 1) return;
+        if (index < 0) index = photos.length - 1;
+        if (index >= photos.length) index = 0;
         currentIndex = index;
         if (track) track.style.transform = "translateX(-" + (currentIndex * 100) + "%)";
-        dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+        gallery.querySelectorAll(".gallery-dot").forEach((d, i) => d.classList.toggle("active", i === currentIndex));
       }
       
-      if (prevBtn) {
-        prevBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          goToSlide(currentIndex - 1);
-        });
+      function loadPhotos() {
+        if (photosLoaded || !hotelId) return;
+        photosLoaded = true;
+        gallery.setAttribute("data-photos-loaded", "loading");
+        
+        fetch("/api/hotels/photos?hotelId=" + hotelId)
+          .then(r => r.json())
+          .then(data => {
+            if (data.photos && data.photos.length > 1) {
+              photos = data.photos;
+              
+              // Rebuild track with all photos
+              track.innerHTML = "";
+              photos.forEach((photoUrl, idx) => {
+                const slide = document.createElement("div");
+                slide.className = "gallery-slide";
+                const img = document.createElement("img");
+                img.src = photoUrl;
+                img.alt = "Photo " + (idx + 1);
+                img.loading = idx === 0 ? "eager" : "lazy";
+                img.decoding = "async";
+                slide.appendChild(img);
+                track.appendChild(slide);
+              });
+              
+              // Add dots
+              const dots = document.createElement("div");
+              dots.className = "gallery-dots";
+              photos.forEach((_, idx) => {
+                const dot = document.createElement("span");
+                dot.className = "gallery-dot" + (idx === 0 ? " active" : "");
+                dots.appendChild(dot);
+              });
+              gallery.appendChild(dots);
+              
+              // Add navigation
+              const prevBtn = document.createElement("button");
+              prevBtn.className = "gallery-nav gallery-prev";
+              prevBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
+              gallery.appendChild(prevBtn);
+              
+              const nextBtn = document.createElement("button");
+              nextBtn.className = "gallery-nav gallery-next";
+              nextBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+              gallery.appendChild(nextBtn);
+              
+              // Remove swipe hint
+              const hint = gallery.querySelector(".gallery-swipe-hint");
+              if (hint) hint.remove();
+              
+              prevBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex - 1);
+              });
+              
+              nextBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex + 1);
+              });
+              
+              gallery.setAttribute("data-photos-loaded", "true");
+            } else {
+              gallery.setAttribute("data-photos-loaded", "single");
+              const hint = gallery.querySelector(".gallery-swipe-hint");
+              if (hint) hint.remove();
+            }
+          })
+          .catch(() => {
+            gallery.setAttribute("data-photos-loaded", "error");
+            const hint = gallery.querySelector(".gallery-swipe-hint");
+            if (hint) hint.remove();
+          });
       }
       
-      if (nextBtn) {
-        nextBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          goToSlide(currentIndex + 1);
-        });
-      }
-      
-      // Touch swipe support
+      // Touch swipe support - also triggers lazy load
       let touchStartX = 0;
       gallery.addEventListener("touchstart", (e) => {
         touchStartX = e.changedTouches[0].screenX;
+        loadPhotos();
       }, { passive: true });
       
       gallery.addEventListener("touchend", (e) => {
         const touchEndX = e.changedTouches[0].screenX;
         const diff = touchStartX - touchEndX;
-        if (Math.abs(diff) > 50) {
+        if (Math.abs(diff) > 50 && photos.length > 1) {
           goToSlide(diff > 0 ? currentIndex + 1 : currentIndex - 1);
         }
       }, { passive: true });
+      
+      // Mouse hover also triggers lazy load
+      gallery.addEventListener("mouseenter", loadPhotos);
     });
   }
 
@@ -635,20 +696,10 @@
       if (seen.has(key)) return;
       seen.add(key);
       
-      // Build photos array
-      let photos = [];
-      if (h && h.photos && Array.isArray(h.photos)) {
-        photos = h.photos.map(p => String(p));
-      } else if (h && h.photo) {
-        photos = [String(h.photo)];
-      } else if (h && h.image) {
-        photos = [String(h.image)];
-      }
-      
       out.push({
+        id: h && (h.id || h.hotelId) ? String(h.id || h.hotelId) : "",
         name: name,
-        image: photos[0] || "",
-        photos: photos,
+        image: h && h.photo ? String(h.photo) : (h && h.image ? String(h.image) : ""),
         deepLink: h && h.deepLink ? String(h.deepLink) : "",
         provider: h && h.provider ? String(h.provider) : "",
         stars: h && h.stars ? Number(h.stars) : 0,
@@ -672,34 +723,19 @@
   function renderHotelArticle(hotel) {
     const name = displayHotelName(hotel);
     const safe = escapeHtml(name);
+    const hotelId = hotel && hotel.id ? hotel.id : "";
     
-    // Build photos array
-    let photos = [];
-    if (hotel && hotel.photos && hotel.photos.length > 0) {
-      photos = hotel.photos;
-    } else if (hotel && hotel.image) {
-      photos = [hotel.image];
-    }
+    // Start with single photo - more photos loaded lazily on interaction
+    const initialPhoto = (hotel && hotel.image) || "";
     
-    // Build gallery HTML
-    let galleryHtml = '<div class="hotel-card-gallery"><div class="gallery-track">';
-    if (photos.length > 0) {
-      photos.forEach((photoUrl, idx) => {
-        galleryHtml += '<div class="gallery-slide"><img src="' + escapeHtml(photoUrl) + '" alt="' + safe + (photos.length > 1 ? ' - Photo ' + (idx + 1) : '') + '" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" decoding="async" /></div>';
-      });
+    // Build gallery HTML with single photo and swipe hint
+    let galleryHtml = '<div class="hotel-card-gallery" data-hotel-id="' + hotelId + '" data-photos-loaded="false">';
+    galleryHtml += '<div class="gallery-track">';
+    if (initialPhoto) {
+      galleryHtml += '<div class="gallery-slide"><img src="' + escapeHtml(initialPhoto) + '" alt="' + safe + '" loading="eager" decoding="async" /></div>';
     }
     galleryHtml += '</div>';
-    
-    // Add dots and nav if multiple photos
-    if (photos.length > 1) {
-      galleryHtml += '<div class="gallery-dots">';
-      photos.forEach((_, idx) => {
-        galleryHtml += '<span class="gallery-dot' + (idx === 0 ? ' active' : '') + '" data-index="' + idx + '"></span>';
-      });
-      galleryHtml += '</div>';
-      galleryHtml += '<button class="gallery-nav gallery-prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>';
-      galleryHtml += '<button class="gallery-nav gallery-next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
-    }
+    galleryHtml += '<div class="gallery-swipe-hint"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>';
     galleryHtml += '</div>';
     
     let locationHtml = "";
