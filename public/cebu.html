@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cf.bstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Red+Hat+Display:ital,wght@0,700;1,700;1,800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=hotels11" />
+  <link rel="stylesheet" href="/styles.css?v=hotels12" />
 </head>
 <body class="nc" data-city-page>
   <a class="skip" href="#main">Skip to content</a>
@@ -50,13 +50,66 @@
           <h2 data-results-heading>Hotels in Cebu</h2>
           <p>Tap a hotel to book on Klook.</p>
         </div>
+        
+        <!-- Filters and Sorting -->
+        <div class="hotel-filters" data-hotel-filters>
+          <div class="hotel-filters-row">
+            <div class="filter-group">
+              <label for="sort-select">Sort by</label>
+              <select id="sort-select" data-filter-sort>
+                <option value="popularity" selected>Popularity</option>
+                <option value="price">Price (low to high)</option>
+                <option value="class_descending">Star rating</option>
+                <option value="review_score">Guest rating</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="stars-select">Stars</label>
+              <select id="stars-select" data-filter-stars>
+                <option value="" selected>Any</option>
+                <option value="5">5 stars</option>
+                <option value="4">4+ stars</option>
+                <option value="3">3+ stars</option>
+              </select>
+            </div>
+            <div class="filter-group filter-price">
+              <label>Price per night</label>
+              <div class="price-inputs">
+                <input type="number" id="min-price" data-filter-min-price placeholder="Min" min="0" step="10" />
+                <span>–</span>
+                <input type="number" id="max-price" data-filter-max-price placeholder="Max" min="0" step="10" />
+              </div>
+            </div>
+          </div>
+          <div class="hotel-filters-row">
+            <label class="filter-checkbox">
+              <input type="checkbox" data-filter-free-cancel />
+              <span>Free cancellation</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" data-filter-free-parking />
+              <span>Free parking</span>
+            </label>
+            <button type="button" class="filter-apply" data-filter-apply>Apply filters</button>
+            <button type="button" class="filter-reset" data-filter-reset>Reset</button>
+          </div>
+        </div>
+        
         <div class="hotel-list" data-results-list>
           <p class="hotel-list-status">Finding hotels…</p>
         </div>
-        <nav class="hotel-pager" data-hotel-pager hidden aria-label="Hotel pages">
-          <button type="button" data-page-prev>Previous</button>
-          <span class="hotel-page-status" data-page-status></span>
-          <button type="button" data-page-next>Next</button>
+        
+        <!-- Pagination -->
+        <nav class="hotel-pager" data-hotel-pager aria-label="Hotel pages">
+          <button type="button" class="pager-btn" data-page-prev disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            Previous
+          </button>
+          <span class="hotel-page-status" data-page-status>Page 1</span>
+          <button type="button" class="pager-btn" data-page-next disabled>
+            Next
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
         </nav>
       </div>
     </section>
@@ -332,36 +385,78 @@
       return card;
     }
     
-    function loadHotels() {
+    // State for pagination and filters
+    var currentPage = 0;
+    var totalCount = 0;
+    var hasMore = false;
+    var isLoading = false;
+    
+    function getFilterValues() {
+      return {
+        sortBy: (document.querySelector("[data-filter-sort]") || {}).value || "popularity",
+        stars: (document.querySelector("[data-filter-stars]") || {}).value || "",
+        minPrice: (document.querySelector("[data-filter-min-price]") || {}).value || "",
+        maxPrice: (document.querySelector("[data-filter-max-price]") || {}).value || "",
+        freeCancellation: (document.querySelector("[data-filter-free-cancel]") || {}).checked || false,
+        freeParking: (document.querySelector("[data-filter-free-parking]") || {}).checked || false
+      };
+    }
+    
+    function loadHotels(page) {
+      if (isLoading) return;
+      isLoading = true;
+      
+      if (typeof page === "number") currentPage = page;
+      
       var checkIn = document.getElementById("checkin");
       var checkOut = document.getElementById("checkout");
       var ci = checkIn ? checkIn.value : "";
       var co = checkOut ? checkOut.value : "";
+      var filters = getFilterValues();
       
       var url = "/api/hotels?city=Cebu";
       if (ci) url += "&checkIn=" + encodeURIComponent(ci);
       if (co) url += "&checkOut=" + encodeURIComponent(co);
       url += "&currency=USD";
+      url += "&page=" + currentPage;
+      url += "&sortBy=" + encodeURIComponent(filters.sortBy);
+      if (filters.stars) url += "&stars=" + encodeURIComponent(filters.stars);
+      if (filters.minPrice) url += "&minPrice=" + encodeURIComponent(filters.minPrice);
+      if (filters.maxPrice) url += "&maxPrice=" + encodeURIComponent(filters.maxPrice);
+      if (filters.freeCancellation) url += "&freeCancellation=true";
+      if (filters.freeParking) url += "&freeParking=true";
       
       var list = document.querySelector("[data-results-list]");
       var countEl = document.querySelector("[data-hotel-count]");
+      var pager = document.querySelector("[data-hotel-pager]");
+      var prevBtn = document.querySelector("[data-page-prev]");
+      var nextBtn = document.querySelector("[data-page-next]");
+      var pageStatus = document.querySelector("[data-page-status]");
+      
+      if (list) list.innerHTML = '<p class="hotel-list-status">Finding hotels…</p>';
       
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
+          isLoading = false;
           if (!list) return;
           
           if (data.error) {
             list.innerHTML = '<p class="hotel-list-status">Hotel feed not configured yet.</p>';
             if (countEl) countEl.textContent = "No hotels";
+            updatePager(pager, prevBtn, nextBtn, pageStatus, 0, 0, false);
             return;
           }
           
           if (!data.hotels || !data.hotels.length) {
-            list.innerHTML = '<p class="hotel-list-status">No hotels found.</p>';
+            list.innerHTML = '<p class="hotel-list-status">No hotels found matching your criteria.</p>';
             if (countEl) countEl.textContent = "0 hotels";
+            updatePager(pager, prevBtn, nextBtn, pageStatus, 0, 0, false);
             return;
           }
+          
+          totalCount = data.totalCount || data.hotels.length;
+          hasMore = data.hasMore || false;
           
           list.innerHTML = "";
           var validHotels = data.hotels.filter(function(h) { return h.id && h.photo; });
@@ -370,19 +465,79 @@
             list.appendChild(createHotelCard(hotel));
           });
           
-          if (countEl) countEl.textContent = validHotels.length + " hotels";
+          if (countEl) {
+            var showing = (currentPage * 12) + validHotels.length;
+            countEl.textContent = totalCount + " hotels";
+          }
+          
+          updatePager(pager, prevBtn, nextBtn, pageStatus, currentPage, totalCount, hasMore);
+          
+          // Scroll to top of hotel list on page change
+          if (currentPage > 0) {
+            var hotelSection = document.getElementById("hotels");
+            if (hotelSection) hotelSection.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
         })
         .catch(function(e) {
+          isLoading = false;
           console.error("Hotel load error:", e);
           if (list) list.innerHTML = '<p class="hotel-list-status">Could not load hotels.</p>';
           if (countEl) countEl.textContent = "Error";
         });
     }
     
+    function updatePager(pager, prevBtn, nextBtn, pageStatus, page, total, more) {
+      if (!pager) return;
+      
+      var totalPages = Math.ceil(total / 12) || 1;
+      
+      if (prevBtn) prevBtn.disabled = page === 0;
+      if (nextBtn) nextBtn.disabled = !more;
+      if (pageStatus) pageStatus.textContent = "Page " + (page + 1) + " of " + totalPages;
+      
+      pager.style.display = total > 12 ? "" : "none";
+    }
+    
+    // Pagination handlers
+    document.addEventListener("click", function(e) {
+      if (e.target.closest("[data-page-prev]") && currentPage > 0) {
+        loadHotels(currentPage - 1);
+      }
+      if (e.target.closest("[data-page-next]") && hasMore) {
+        loadHotels(currentPage + 1);
+      }
+    });
+    
+    // Filter handlers
+    document.addEventListener("click", function(e) {
+      if (e.target.closest("[data-filter-apply]")) {
+        currentPage = 0;
+        loadHotels(0);
+      }
+      if (e.target.closest("[data-filter-reset]")) {
+        var sortSel = document.querySelector("[data-filter-sort]");
+        var starsSel = document.querySelector("[data-filter-stars]");
+        var minPrice = document.querySelector("[data-filter-min-price]");
+        var maxPrice = document.querySelector("[data-filter-max-price]");
+        var freeCancel = document.querySelector("[data-filter-free-cancel]");
+        var freeParking = document.querySelector("[data-filter-free-parking]");
+        
+        if (sortSel) sortSel.value = "popularity";
+        if (starsSel) starsSel.value = "";
+        if (minPrice) minPrice.value = "";
+        if (maxPrice) maxPrice.value = "";
+        if (freeCancel) freeCancel.checked = false;
+        if (freeParking) freeParking.checked = false;
+        
+        currentPage = 0;
+        loadHotels(0);
+      }
+    });
+    
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", loadHotels);
+      document.addEventListener("DOMContentLoaded", function() { loadHotels(0); });
     } else {
-      setTimeout(loadHotels, 100);
+      setTimeout(function() { loadHotels(0); }, 100);
     }
     
     document.querySelectorAll("[data-cur]").forEach(function(btn) {
@@ -401,6 +556,6 @@
     });
   })();
   </script>
-  <script src="/cal.js?v=hotels11"></script><script src="/guests.js?v=hotels11"></script><script src="/app.js?v=hotels11"></script>
+  <script src="/cal.js?v=hotels12"></script><script src="/guests.js?v=hotels12"></script><script src="/app.js?v=hotels12"></script>
 </body>
 </html>

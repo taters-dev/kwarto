@@ -1779,6 +1779,250 @@ body.cal-open .nc-search-wrap { z-index: 45; }
   }
 }
 
+/* Hotel Filters */
+.hotel-filters {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.hotel-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.hotel-filters-row + .hotel-filters-row {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-group select,
+.filter-group input[type="number"] {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font-size: 0.95rem;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-width: 140px;
+}
+
+.filter-group select:focus,
+.filter-group input[type="number"]:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(0, 56, 168, 0.1);
+}
+
+.filter-price {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-inputs input {
+  width: 90px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.price-inputs span {
+  color: var(--muted);
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--ink);
+  padding: 8px 0;
+}
+
+.filter-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.filter-apply,
+.filter-reset {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-apply {
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  margin-left: auto;
+}
+
+.filter-apply:hover {
+  background: var(--ink-2);
+}
+
+.filter-reset {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.filter-reset:hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+/* Hotel Pagination */
+.hotel-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 0;
+  margin-top: 24px;
+}
+
+.hotel-pager[style*="display: none"] {
+  display: none !important;
+}
+
+.pager-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pager-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pager-btn:hover:not(:disabled) {
+  background: var(--paper);
+  border-color: var(--line-strong);
+}
+
+.pager-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hotel-page-status {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--muted);
+  min-width: 100px;
+  text-align: center;
+}
+
+/* Responsive filters */
+@media (max-width: 768px) {
+  .hotel-filters {
+    padding: 16px;
+  }
+  
+  .hotel-filters-row {
+    gap: 12px;
+  }
+  
+  .filter-group {
+    flex: 1;
+    min-width: calc(50% - 8px);
+  }
+  
+  .filter-group select,
+  .filter-group input[type="number"] {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .filter-price {
+    flex-basis: 100%;
+    max-width: none;
+  }
+  
+  .filter-apply,
+  .filter-reset {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .filter-apply {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .filter-group {
+    min-width: 100%;
+  }
+  
+  .hotel-pager {
+    gap: 12px;
+  }
+  
+  .pager-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .pager-btn span {
+    display: none;
+  }
+}
+
 /* Blue footer — hero PH flag blue, white/ink-on-blue type. Do not restyle dest/search/calendar/hero. */
 .nc-foot,
 .site-footer {
