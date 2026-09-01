@@ -78,95 +78,74 @@ async function fetchHotelPhotos(hotelIds) {
   
   const photosMap = {};
   
-  // The API might only accept one hotel at a time, so we'll try batch first then fallback
-  const params = new URLSearchParams({
-    hotel_ids: hotelIds.slice(0, 6).join(","),  // Limit to first 6 hotels
-    languagecode: "en-us"
+  function extractPhotoUrl(photo) {
+    // Try different URL field names used by Booking.com
+    if (typeof photo === 'string') return photo;
+    return photo.url_max || 
+           photo.url_1440 || 
+           photo.url_original || 
+           photo.large_url ||
+           photo.photo_url ||
+           (photo.url_square60 ? photo.url_square60.replace('/square60/', '/max500/') : null) ||
+           photo.url ||
+           null;
+  }
+  
+  // Fetch photos for first 4 hotels in parallel (to avoid too many API calls)
+  const hotelIdsToFetch = hotelIds.slice(0, 4);
+  
+  const fetchPromises = hotelIdsToFetch.map(async (hotelId) => {
+    try {
+      const params = new URLSearchParams({
+        hotel_ids: String(hotelId),
+        languagecode: "en-us"
+      });
+      
+      const url = `https://${RAPIDAPI_HOST}/properties/get-hotel-photos?${params.toString()}`;
+      
+      const r = await fetch(url, {
+        headers: {
+          "x-rapidapi-host": RAPIDAPI_HOST,
+          "x-rapidapi-key": RAPIDAPI_KEY
+        },
+        cache: "no-store"
+      });
+      
+      if (!r.ok) return { hotelId, photos: [] };
+      
+      const data = await r.json();
+      
+      if (!data) return { hotelId, photos: [] };
+      
+      // Parse photos from response - format is usually an array or has a data/photos array
+      let photoUrls = [];
+      
+      if (Array.isArray(data)) {
+        photoUrls = data.slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
+      } else if (data.data && Array.isArray(data.data)) {
+        photoUrls = data.data.slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
+      } else if (data.photos && Array.isArray(data.photos)) {
+        photoUrls = data.photos.slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
+      } else if (data[hotelId] && Array.isArray(data[hotelId])) {
+        photoUrls = data[hotelId].slice(0, 5).map(p => extractPhotoUrl(p)).filter(Boolean);
+      }
+      
+      return { hotelId, photos: photoUrls };
+    } catch (e) {
+      console.error(`Photo fetch error for hotel ${hotelId}:`, e);
+      return { hotelId, photos: [] };
+    }
   });
   
-  const url = `https://${RAPIDAPI_HOST}/properties/get-hotel-photos?${params.toString()}`;
+  const results = await Promise.all(fetchPromises);
   
-  try {
-    const r = await fetch(url, {
-      headers: {
-        "x-rapidapi-host": RAPIDAPI_HOST,
-        "x-rapidapi-key": RAPIDAPI_KEY
-      },
-      cache: "no-store"
-    });
-    
-    if (!r.ok) {
-      console.error("Photos API error:", r.status);
-      return {};
+  results.forEach(({ hotelId, photos }) => {
+    if (photos.length > 0) {
+      photosMap[hotelId] = photos;
     }
-    
-    const data = await r.json();
-    
-    if (!data) return {};
-    
-    // Handle different response formats from the API
-    // Format 1: { "hotel_id": [ {photo objects} ] }
-    // Format 2: { data: [ {photo with hotel_id} ] }
-    // Format 3: [ {photo objects with hotel_id} ]
-    
-    function extractPhotoUrl(photo) {
-      // Try different URL field names
-      return photo.url_max || 
-             photo.url_1440 || 
-             photo.url_original || 
-             photo.large_url ||
-             photo.url_square60?.replace('/square60/', '/max500/') ||
-             photo.url ||
-             (typeof photo === 'string' ? photo : null);
-    }
-    
-    if (Array.isArray(data)) {
-      // Response is an array of photos
-      data.forEach(photo => {
-        const hotelId = photo.hotel_id || photo.property_id;
-        if (hotelId) {
-          if (!photosMap[hotelId]) photosMap[hotelId] = [];
-          const url = extractPhotoUrl(photo);
-          if (url && photosMap[hotelId].length < 5) {
-            photosMap[hotelId].push(url);
-          }
-        }
-      });
-    } else if (data.data && Array.isArray(data.data)) {
-      // Response has a data array
-      data.data.forEach(photo => {
-        const hotelId = photo.hotel_id || photo.property_id;
-        if (hotelId) {
-          if (!photosMap[hotelId]) photosMap[hotelId] = [];
-          const url = extractPhotoUrl(photo);
-          if (url && photosMap[hotelId].length < 5) {
-            photosMap[hotelId].push(url);
-          }
-        }
-      });
-    } else if (typeof data === "object") {
-      // Response is an object keyed by hotel_id
-      Object.entries(data).forEach(([key, value]) => {
-        const hotelId = key;
-        if (Array.isArray(value)) {
-          photosMap[hotelId] = value
-            .slice(0, 5)
-            .map(p => extractPhotoUrl(p))
-            .filter(Boolean);
-        } else if (value && Array.isArray(value.photos)) {
-          photosMap[hotelId] = value.photos
-            .slice(0, 5)
-            .map(p => extractPhotoUrl(p))
-            .filter(Boolean);
-        }
-      });
-    }
-    
-    return photosMap;
-  } catch (e) {
-    console.error("Hotel photos error:", e);
-    return {};
-  }
+  });
+  
+  return photosMap;
 }
 
 export async function GET(request) {
@@ -283,11 +262,11 @@ export async function GET(request) {
   
   if (debug) {
     response.debug = {
-      hotelIds: hotelIds,
+      hotelIds: hotelIds.slice(0, 4),
       photosFound: Object.keys(photosMap).length,
-      samplePhotos: Object.fromEntries(
-        Object.entries(photosMap).slice(0, 2)
-      )
+      hotelsWithMultiplePhotos: Object.entries(photosMap)
+        .filter(([_, photos]) => photos.length > 1)
+        .map(([id, photos]) => ({ id, count: photos.length }))
     };
   }
   
