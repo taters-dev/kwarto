@@ -76,8 +76,11 @@ async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
 async function fetchHotelPhotos(hotelIds) {
   if (!RAPIDAPI_KEY || !hotelIds || hotelIds.length === 0) return {};
   
+  const photosMap = {};
+  
+  // The API might only accept one hotel at a time, so we'll try batch first then fallback
   const params = new URLSearchParams({
-    hotel_ids: hotelIds.join(","),
+    hotel_ids: hotelIds.slice(0, 6).join(","),  // Limit to first 6 hotels
     languagecode: "en-us"
   });
   
@@ -92,26 +95,69 @@ async function fetchHotelPhotos(hotelIds) {
       cache: "no-store"
     });
     
-    if (!r.ok) return {};
+    if (!r.ok) {
+      console.error("Photos API error:", r.status);
+      return {};
+    }
+    
     const data = await r.json();
     
-    // Build a map of hotel_id -> photos array
-    const photosMap = {};
-    if (data && typeof data === "object") {
-      // Response format may vary - handle different structures
+    if (!data) return {};
+    
+    // Handle different response formats from the API
+    // Format 1: { "hotel_id": [ {photo objects} ] }
+    // Format 2: { data: [ {photo with hotel_id} ] }
+    // Format 3: [ {photo objects with hotel_id} ]
+    
+    function extractPhotoUrl(photo) {
+      // Try different URL field names
+      return photo.url_max || 
+             photo.url_1440 || 
+             photo.url_original || 
+             photo.large_url ||
+             photo.url_square60?.replace('/square60/', '/max500/') ||
+             photo.url ||
+             (typeof photo === 'string' ? photo : null);
+    }
+    
+    if (Array.isArray(data)) {
+      // Response is an array of photos
+      data.forEach(photo => {
+        const hotelId = photo.hotel_id || photo.property_id;
+        if (hotelId) {
+          if (!photosMap[hotelId]) photosMap[hotelId] = [];
+          const url = extractPhotoUrl(photo);
+          if (url && photosMap[hotelId].length < 5) {
+            photosMap[hotelId].push(url);
+          }
+        }
+      });
+    } else if (data.data && Array.isArray(data.data)) {
+      // Response has a data array
+      data.data.forEach(photo => {
+        const hotelId = photo.hotel_id || photo.property_id;
+        if (hotelId) {
+          if (!photosMap[hotelId]) photosMap[hotelId] = [];
+          const url = extractPhotoUrl(photo);
+          if (url && photosMap[hotelId].length < 5) {
+            photosMap[hotelId].push(url);
+          }
+        }
+      });
+    } else if (typeof data === "object") {
+      // Response is an object keyed by hotel_id
       Object.entries(data).forEach(([key, value]) => {
+        const hotelId = key;
         if (Array.isArray(value)) {
-          // If value is array of photos
-          photosMap[key] = value
-            .filter(p => p && (p.url_max || p.url_1440 || p.url_original || p.url))
+          photosMap[hotelId] = value
             .slice(0, 5)
-            .map(p => p.url_max || p.url_1440 || p.url_original || p.url);
+            .map(p => extractPhotoUrl(p))
+            .filter(Boolean);
         } else if (value && Array.isArray(value.photos)) {
-          // If value has a photos array
-          photosMap[key] = value.photos
-            .filter(p => p && (p.url_max || p.url_1440 || p.url_original || p.url))
+          photosMap[hotelId] = value.photos
             .slice(0, 5)
-            .map(p => p.url_max || p.url_1440 || p.url_original || p.url);
+            .map(p => extractPhotoUrl(p))
+            .filter(Boolean);
         }
       });
     }
@@ -221,7 +267,10 @@ export async function GET(request) {
       };
     });
   
-  return Response.json({
+  // Check if debug mode is requested
+  const debug = params.get("debug") === "1";
+  
+  const response = {
     checkIn,
     checkOut,
     currency,
@@ -230,5 +279,17 @@ export async function GET(request) {
     totalCount: data.primary_count || results.length,
     hotels: results,
     hasKey: !!RAPIDAPI_KEY
-  });
+  };
+  
+  if (debug) {
+    response.debug = {
+      hotelIds: hotelIds,
+      photosFound: Object.keys(photosMap).length,
+      samplePhotos: Object.fromEntries(
+        Object.entries(photosMap).slice(0, 2)
+      )
+    };
+  }
+  
+  return Response.json(response);
 }
