@@ -101,43 +101,58 @@
     }
     
     function createHotelCard(hotel) {
-      var a = document.createElement("a");
-      a.className = "dest-card hotel-card-enhanced";
-      a.href = "#";
-      a.setAttribute("data-hotel-name", hotel.name);
+      var card = document.createElement("a");
+      card.className = "hotel-card-v2";
+      card.href = "#";
+      card.setAttribute("data-hotel-name", hotel.name);
       
+      // Image section
+      var imageWrap = document.createElement("div");
+      imageWrap.className = "hotel-card-image";
       var img = document.createElement("img");
       img.src = hotel.photo || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
       img.alt = hotel.name;
       img.loading = "lazy";
       img.decoding = "async";
-      a.appendChild(img);
+      imageWrap.appendChild(img);
+      card.appendChild(imageWrap);
       
-      var meta = document.createElement("div");
-      meta.className = "meta";
+      // Content section
+      var content = document.createElement("div");
+      content.className = "hotel-card-content";
       
+      // Hotel name
       var h3 = document.createElement("h3");
+      h3.className = "hotel-card-name";
       h3.textContent = hotel.name;
-      meta.appendChild(h3);
+      content.appendChild(h3);
       
+      // Location
       if (hotel.district || hotel.city) {
         var location = document.createElement("p");
-        location.className = "hotel-location";
+        location.className = "hotel-card-location";
         location.textContent = hotel.district || hotel.city;
-        meta.appendChild(location);
+        content.appendChild(location);
       }
       
+      // Star rating
       if (hotel.stars && hotel.stars > 0) {
         var starsEl = document.createElement("div");
-        starsEl.className = "hotel-stars";
-        for (var i = 0; i < Math.min(hotel.stars, 5); i++) {
-          starsEl.innerHTML += '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg>';
+        starsEl.className = "hotel-card-stars";
+        var starCount = Math.min(hotel.stars, 5);
+        for (var i = 0; i < 5; i++) {
+          if (i < starCount) {
+            starsEl.innerHTML += '<svg class="star-filled" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg>';
+          } else {
+            starsEl.innerHTML += '<svg class="star-empty" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg>';
+          }
         }
-        meta.appendChild(starsEl);
+        content.appendChild(starsEl);
       }
       
+      // Badges
       var badges = document.createElement("div");
-      badges.className = "hotel-badges";
+      badges.className = "hotel-card-badges";
       
       if (hotel.hasFreeCancellation) {
         var cancelBadge = document.createElement("span");
@@ -154,36 +169,37 @@
       }
       
       if (badges.children.length > 0) {
-        meta.appendChild(badges);
+        content.appendChild(badges);
       }
       
-      var priceRow = document.createElement("div");
-      priceRow.className = "hotel-price-row";
+      // Price and rating row
+      var footer = document.createElement("div");
+      footer.className = "hotel-card-footer";
       
       if (hotel.priceUSD) {
         var price = document.createElement("span");
-        price.className = "hotel-price";
+        price.className = "hotel-card-price";
         price.setAttribute("data-usd", hotel.priceUSD);
         price.textContent = "from " + formatPrice(hotel.priceUSD, currency());
-        priceRow.appendChild(price);
+        footer.appendChild(price);
       }
       
       if (hotel.rating) {
         var ratingEl = document.createElement("span");
-        ratingEl.className = "hotel-rating";
+        ratingEl.className = "hotel-card-rating";
         ratingEl.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg> ' + hotel.rating;
         if (hotel.reviewCount) {
           ratingEl.innerHTML += ' <span class="review-count">(' + hotel.reviewCount.toLocaleString() + ')</span>';
         }
-        priceRow.appendChild(ratingEl);
+        footer.appendChild(ratingEl);
       }
       
-      if (priceRow.children.length > 0) {
-        meta.appendChild(priceRow);
+      if (footer.children.length > 0) {
+        content.appendChild(footer);
       }
       
-      a.appendChild(meta);
-      return a;
+      card.appendChild(content);
+      return card;
     }
     
     function loadHotels() {
