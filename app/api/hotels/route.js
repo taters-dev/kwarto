@@ -36,9 +36,23 @@ function guestFromParams(params) {
   return { guests, children, childages };
 }
 
+const KNOWN_DEST = [
+  { keys: ["mactan"], dest_id: "900062776", dest_type: "city", city_name: "Mactan" },
+  { keys: ["cebu"], dest_id: "-2421883", dest_type: "city", city_name: "Cebu" }
+];
+
+function knownDest(query) {
+  const q = String(query || "").toLowerCase();
+  for (const d of KNOWN_DEST) {
+    if (d.keys.some((k) => q.includes(k))) return { dest_id: d.dest_id, dest_type: d.dest_type, city_name: d.city_name };
+  }
+  return null;
+}
+
 async function findDestination(query) {
-  if (!RAPIDAPI_KEY || !query) return null;
-  
+  const fallback = knownDest(query);
+  if (!RAPIDAPI_KEY || !query) return fallback;
+
   const params = new URLSearchParams({
     text: query,
     languagecode: "en-us"
@@ -55,14 +69,15 @@ async function findDestination(query) {
       cache: "no-store"
     });
     
-    if (!r.ok) return null;
+    if (!r.ok) return fallback;
     const data = await r.json();
-    
+    if (!Array.isArray(data) || !data.length) return fallback;
+
     const city = data.find(item => item.dest_type === "city");
-    return city || data[0] || null;
+    return city || data[0] || fallback;
   } catch (e) {
     console.error("Destination search error:", e);
-    return null;
+    return fallback;
   }
 }
 

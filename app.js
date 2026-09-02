@@ -936,9 +936,16 @@
     const safeQ = escapeHtml(q);
     const { checkIn, checkOut } = stayDates();
     const dates = checkIn && checkOut ? " for " + checkIn + " to " + checkOut : "";
-    const status = hotelName
-      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Booking.com."
-      : "No hotels available on Booking.com in " + escapeHtml(place) + dates + ". Try different dates, or compare on Booking.com.";
+    let status;
+    if (hotelName) {
+      status = "You searched " + escapeHtml(hotelName) + ". Compare that stay on Booking.com.";
+    } else if (lastHotelError === "City not found") {
+      status = "Could not look up " + escapeHtml(place) + " on Booking.com. Try again in a moment, or compare on Booking.com.";
+    } else if (lastHotelError === "Failed to fetch hotels" || lastHotelError === "network") {
+      status = "Booking.com availability is unavailable right now. Try again in a moment, or compare on Booking.com.";
+    } else {
+      status = "No hotels available on Booking.com in " + escapeHtml(place) + dates + ". Try different dates, or compare on Booking.com.";
+    }
     return '<div class="hotel-empty" data-city-empty>' +
       '<p class="hotel-list-status">' + status + "</p>" +
       '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Booking.com</a>' +
@@ -1076,6 +1083,7 @@
   // Pull the first few Booking.com pages so the sidebar has a real pool to
   // sort, filter, and paginate locally (each API page is ~20–30 hotels).
   const HOTEL_FETCH_PAGES = 2;
+  let lastHotelError = "";
 
   function fetchHotels(place) {
     const { checkIn, checkOut, guests, children, childages } = stayDates();
@@ -1092,22 +1100,24 @@
       pages.push(
         fetch(base + "&page=" + p)
           .then((r) => r.json())
-          .then((j) => hotelsFrom(j))
-          .catch(() => [])
+          .then((j) => ({ hotels: hotelsFrom(j), error: j && j.error ? String(j.error) : "" }))
+          .catch(() => ({ hotels: [], error: "network" }))
       );
     }
-    return Promise.all(pages).then((lists) => {
+    return Promise.all(pages).then((packs) => {
       const seen = new Set();
       const out = [];
-      lists.forEach((list) => {
-        list.forEach((h) => {
+      let error = "";
+      packs.forEach((pack) => {
+        if (pack.error && !error) error = pack.error;
+        (pack.hotels || []).forEach((h) => {
           const key = (h.id || h.name).toLowerCase();
           if (seen.has(key)) return;
           seen.add(key);
           out.push(h);
         });
       });
-      return out;
+      return { hotels: out, error: error };
     });
   }
 
@@ -1155,10 +1165,12 @@
     }
     list.innerHTML = '<p class="hotel-list-status">Finding hotels available for your dates…</p>';
     fetchHotels(place || short)
-      .then((hotels) => {
-        paintHotelNames(hotels, !!(opts && opts.resetPage));
+      .then((result) => {
+        lastHotelError = result && result.error ? result.error : "";
+        paintHotelNames(result && result.hotels ? result.hotels : [], !!(opts && opts.resetPage));
       })
       .catch(() => {
+        lastHotelError = "network";
         paintHotelNames([], true);
       });
   }
