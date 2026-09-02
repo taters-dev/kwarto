@@ -158,12 +158,10 @@ export async function GET(request) {
     });
   }
   
+  // Return the full Booking.com page (typically 20–30 properties); the client
+  // sorts, filters, and paginates locally. Photos are fetched lazily via /api/hotels/photos.
   const hotelItems = data.result
-    .filter(item => item.type === "property_card" && item.hotel_id)
-    .slice(0, 12);
-  
-  // Photos are now fetched lazily via /api/hotels/photos endpoint
-  const hotelIds = hotelItems.map(h => h.hotel_id);
+    .filter(item => item.type === "property_card" && item.hotel_id);
   
   const results = hotelItems.map(hotel => {
       const priceBreakdown = hotel.composite_price_breakdown;
@@ -198,8 +196,8 @@ export async function GET(request) {
     });
   
   const totalCount = data.primary_count || results.length;
-  const pageSize = 12;
-  const hasMore = (page + 1) * pageSize < totalCount;
+  const pageSize = results.length;
+  const hasMore = pageSize > 0 && (page + 1) * pageSize < totalCount;
   
   return Response.json({
     checkIn,
