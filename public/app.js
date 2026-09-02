@@ -96,7 +96,28 @@
     });
   };
   document.querySelectorAll(".nc-fx [data-cur]").forEach((btn) => {
-    btn.addEventListener("click", () => setCur(btn.getAttribute("data-cur")));
+    btn.addEventListener("click", () => {
+      setCur(btn.getAttribute("data-cur"));
+      document.dispatchEvent(new CustomEvent("kwarto:cur"));
+    });
+  });
+
+  // Homepage city rail arrows (NiteCrawler "Don't Skip These Trips" carousel).
+  const rail = document.querySelector("#destinations .dest-grid");
+  if (rail) {
+    const step = () => Math.max(240, Math.round(rail.clientWidth * 0.8));
+    document.querySelectorAll("[data-rail-prev]").forEach((b) => b.addEventListener("click", () => rail.scrollBy({ left: -step(), behavior: "smooth" })));
+    document.querySelectorAll("[data-rail-next]").forEach((b) => b.addEventListener("click", () => rail.scrollBy({ left: step(), behavior: "smooth" })));
+  }
+
+  // Results sidebar: collapse on phones.
+  document.querySelectorAll("[data-side-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const side = btn.closest("[data-hotel-side]");
+      if (!side) return;
+      const open = side.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
   });
   let startCur = "PHP";
   try { startCur = localStorage.getItem("tuloy-cur") || "PHP"; } catch (e) {}
@@ -791,8 +812,122 @@
       starsHtml +
       badgesHtml +
       footerHtml +
+      '<span class="hotel-card-cta">See Rates on Booking.com</span>' +
       '</div></a>';
   }
+
+  // Sidebar sort + filters (results pages). Prices compare in the displayed currency.
+  const hotelView = { sort: "recommended", min: null, max: null, cancel: false };
+
+  function priceShown(usd) {
+    if (!usd) return null;
+    return currency() === "USD" ? usd : Math.round(usd * RATE);
+  }
+
+  function applyHotelView(list) {
+    let out = list.slice();
+    const priced = hotelView.min != null || hotelView.max != null;
+    if (priced) {
+      out = out.filter((h) => {
+        const p = priceShown(h.priceUSD);
+        if (p == null) return false;
+        if (hotelView.min != null && p < hotelView.min) return false;
+        if (hotelView.max != null && p > hotelView.max) return false;
+        return true;
+      });
+    }
+    if (hotelView.cancel) out = out.filter((h) => h.hasFreeCancellation);
+    const num = (v) => (v == null || isNaN(v) ? null : Number(v));
+    const desc = (get) => (a, b) => (num(get(b)) || 0) - (num(get(a)) || 0);
+    if (hotelView.sort === "stars") out.sort(desc((h) => h.stars));
+    else if (hotelView.sort === "rating") out.sort(desc((h) => h.rating));
+    else if (hotelView.sort === "price-asc") {
+      out.sort((a, b) => (num(a.priceUSD) == null ? Infinity : a.priceUSD) - (num(b.priceUSD) == null ? Infinity : b.priceUSD));
+    } else if (hotelView.sort === "price-desc") out.sort(desc((h) => h.priceUSD));
+    return out;
+  }
+
+  function hotelViewActive() {
+    return hotelView.sort !== "recommended" || hotelView.min != null || hotelView.max != null || hotelView.cancel;
+  }
+
+  function renderFilterEmpty() {
+    return '<div class="hotel-empty" data-city-empty>' +
+      '<p class="hotel-list-status">No hotels match these filters. Loosen the price range or turn off free cancellation.</p>' +
+      '<button type="button" class="cta" data-filter-clear>Clear All Filters</button>' +
+      "</div>";
+  }
+
+  function bindHotelView() {
+    document.querySelectorAll("[data-sort]").forEach((btn) => {
+      if (btn.getAttribute("data-bound-sort") === "1") return;
+      btn.setAttribute("data-bound-sort", "1");
+      btn.addEventListener("click", () => {
+        hotelView.sort = btn.getAttribute("data-sort") || "recommended";
+        document.querySelectorAll("[data-sort]").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("is-on", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        hotelPage = 1;
+        paintHotelPage();
+      });
+    });
+    let priceTimer = 0;
+    const readPrice = (el) => {
+      const v = parseFloat(el.value);
+      return isNaN(v) || el.value === "" ? null : v;
+    };
+    document.querySelectorAll("[data-price-min], [data-price-max]").forEach((el) => {
+      if (el.getAttribute("data-bound-price") === "1") return;
+      el.setAttribute("data-bound-price", "1");
+      el.addEventListener("input", () => {
+        clearTimeout(priceTimer);
+        priceTimer = setTimeout(() => {
+          const minEl = document.querySelector("[data-price-min]");
+          const maxEl = document.querySelector("[data-price-max]");
+          hotelView.min = minEl ? readPrice(minEl) : null;
+          hotelView.max = maxEl ? readPrice(maxEl) : null;
+          hotelPage = 1;
+          paintHotelPage();
+        }, 250);
+      });
+    });
+    document.querySelectorAll("[data-filter-cancel]").forEach((el) => {
+      if (el.getAttribute("data-bound-cancel") === "1") return;
+      el.setAttribute("data-bound-cancel", "1");
+      el.addEventListener("change", () => {
+        hotelView.cancel = !!el.checked;
+        hotelPage = 1;
+        paintHotelPage();
+      });
+    });
+    document.querySelectorAll("[data-filter-clear]").forEach((el) => {
+      if (el.getAttribute("data-bound-clear") === "1") return;
+      el.setAttribute("data-bound-clear", "1");
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        hotelView.sort = "recommended";
+        hotelView.min = null;
+        hotelView.max = null;
+        hotelView.cancel = false;
+        document.querySelectorAll("[data-sort]").forEach((b) => {
+          const on = b.getAttribute("data-sort") === "recommended";
+          b.classList.toggle("is-on", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        document.querySelectorAll("[data-price-min], [data-price-max]").forEach((i) => { i.value = ""; });
+        document.querySelectorAll("[data-filter-cancel]").forEach((i) => { i.checked = false; });
+        hotelPage = 1;
+        paintHotelPage();
+      });
+    });
+    document.querySelectorAll("[data-price-cur]").forEach((el) => { el.textContent = currency(); });
+  }
+  document.addEventListener("kwarto:cur", () => {
+    document.querySelectorAll("[data-price-cur]").forEach((el) => { el.textContent = currency(); });
+    if (hotelNames.length && (hotelView.min != null || hotelView.max != null)) paintHotelPage();
+  });
 
   function renderEmptyCity(place, hotelName) {
     const q = hotelName || place;
@@ -842,13 +977,21 @@
     const next = document.querySelector("[data-page-next]");
     const status = document.querySelector("[data-page-status]");
     if (!list) return;
-    const unique = hotelNames;
-    if (!unique.length) {
+    bindHotelView();
+    if (!hotelNames.length) {
       const pickedHotel = (params.get("hotel") || "").trim();
       list.innerHTML = renderEmptyCity(hotelPlace || "this city", pickedHotel.split(",")[0].trim());
-      if (countEl) countEl.textContent = "Compare on Klook";
+      if (countEl) countEl.textContent = "Compare on Booking.com";
       if (pager) pager.hidden = true;
       bindContinue();
+      return;
+    }
+    const unique = applyHotelView(hotelNames);
+    if (!unique.length) {
+      list.innerHTML = renderFilterEmpty();
+      if (countEl) countEl.textContent = "0 of " + hotelNames.length + " hotels";
+      if (pager) pager.hidden = true;
+      bindHotelView();
       return;
     }
     const pages = Math.max(1, Math.ceil(unique.length / HOTEL_PAGE_SIZE));
@@ -857,7 +1000,11 @@
     const start = (hotelPage - 1) * HOTEL_PAGE_SIZE;
     const slice = unique.slice(start, start + HOTEL_PAGE_SIZE);
     list.innerHTML = slice.map(renderHotelArticle).join("");
-    if (countEl) countEl.textContent = unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    if (countEl) {
+      countEl.textContent = hotelViewActive() && unique.length !== hotelNames.length
+        ? unique.length + " of " + hotelNames.length + " hotels"
+        : unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    }
     if (pager) pager.hidden = unique.length <= HOTEL_PAGE_SIZE;
     if (status) {
       const from = start + 1;
@@ -943,6 +1090,9 @@
     if (head) {
       head.textContent = short;
       document.title = short + " hotels — Kwarto";
+    }
+    if (place && searchForm && searchForm.city && !searchForm.city.value) {
+      searchForm.city.value = place;
     }
     const pickedHotel = (params.get("hotel") || "").trim();
     if (!place && !pickedHotel) {

@@ -6,29 +6,39 @@
   <title>Coral House Mactan — Kwarto</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Red+Hat+Display:ital,wght@0,700;1,700;1,800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&family=Red+Hat+Display:ital,wght@0,700;0,800;1,700;1,800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css?v=hotels11" />
 </head>
 <body class="nc">
   <a class="skip" href="#main">Skip to content</a>
+  <a class="nc-mobile-bar" href="mailto:hello@staytuloy.com">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+    Need help? hello@staytuloy.com
+  </a>
   <header class="nc-top">
     <div class="wrap nc-top-inner">
-      <a class="nc-logo" href="index.html" aria-label="Kwarto home">
+      <a class="nc-logo" href="/" aria-label="Kwarto home">
         <img class="nc-logo-img" src="/brand/kwarto-wordmark.png" alt="Kwarto" />
       </a>
       <nav class="nc-top-links" aria-label="Site">
+        <a class="nc-top-help" href="mailto:hello@staytuloy.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          hello@staytuloy.com
+        </a>
+        <a href="/#search">Search</a>
+        <a href="/cebu">Cebu Hotels</a>
         <div class="nc-fx" role="group" aria-label="Currency">
           <button type="button" data-cur="PHP" class="is-on">PHP</button>
           <button type="button" data-cur="USD">USD</button>
         </div>
-        <a href="index.html#search">Search</a>
+        <a class="nc-member" href="/#search">Find My Hotel</a>
       </nav>
     </div>
   </header>
 
   <main id="main">
-    <div class="wrap">
-      <p class="crumb" style="padding-top:28px"><a href="index.html">Home</a> · <a href="cebu.html?city=Cebu,%20Philippines">Cebu</a> · Mactan</p>
+    <div class="wrap hotel-page-top">
+      <p class="crumb"><a href="/">Home</a> · <a href="/cebu?city=Cebu,%20Philippines">Cebu</a> · Mactan</p>
 
       <div class="gallery" aria-label="Property photos">
         <div class="main">
@@ -122,13 +132,28 @@
   </main>
 
   <footer class="site-footer nc-foot">
-    <div class="wrap">
-      <div>
-        <a class="nc-logo" href="index.html"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
-        <p>Support — hello@staytuloy.com</p>
-        <span class="tiny">Example data, not live rates. Cid is a mock.</span>
+    <div class="wrap nc-foot-grid">
+      <div class="nc-foot-brand">
+        <a class="nc-logo" href="/" aria-label="Kwarto home"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
+        <div class="nc-foot-help">
+          <p class="nc-foot-h">Need help?</p>
+          <p>Email us to book or get support.</p>
+          <a href="mailto:hello@staytuloy.com">hello@staytuloy.com</a>
+        </div>
       </div>
-      <p>Made for Filipinos who book the trip, then the room.</p>
+      <div class="nc-foot-end">
+        <p class="nc-foot-tag">Made for Filipinos who book the trip, then the room.</p>
+        <div class="nc-foot-links">
+          <a href="/#search">Search</a>
+          <a href="/cebu">Cebu Hotels</a>
+          <a href="/#faq">FAQs</a>
+          <a class="btn btn-sm btn-outline" href="mailto:hello@staytuloy.com?subject=Kwarto%20feedback">Leave Feedback</a>
+        </div>
+        <div class="nc-foot-legal">
+          <p>© 2026 Kwarto, all rights reserved.</p>
+          <span class="tiny">Example data, not live rates. Cid is a mock.</span>
+        </div>
+      </div>
     </div>
   </footer>
   <script src="/app.js?v=hotels11"></script>
