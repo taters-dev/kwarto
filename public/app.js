@@ -1111,10 +1111,29 @@
     });
   }
 
+  function syncStayUrl() {
+    try {
+      const u = new URL(location.href);
+      const { checkIn, checkOut, guests, children, childages } = stayDates();
+      if (checkIn) u.searchParams.set("checkin", checkIn);
+      if (checkOut) u.searchParams.set("checkout", checkOut);
+      if (guests) u.searchParams.set("guests", String(guests));
+      if (Number(children) > 0) {
+        u.searchParams.set("children", String(children));
+        if (childages) u.searchParams.set("childages", childages);
+      } else {
+        u.searchParams.delete("children");
+        u.searchParams.delete("childages");
+      }
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    } catch (e) {}
+  }
+
   function fillResults(opts) {
     const list = document.querySelector("[data-results-list]");
     if (!list) return;
     bindHotelPager();
+    syncStayUrl();
     const place = (params.get("city") || placeFromPath() || (isCebuPage() ? "Cebu, Philippines" : "")).trim();
     const short = place.split(",")[0].trim() || place || "Hotels";
     hotelPlace = short;

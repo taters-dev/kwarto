@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels13";
+const cacheBust = "hotels14";
 const need = ["index.html", "cebu.html", "hotel.html", "results.html", "cal.js", "guests.js", "app.js", "styles.css"];
 
 function applyCacheBust(html) {
@@ -353,7 +353,7 @@ if (!appjs.includes("/api/hotels?city=") || !appjs.includes("function fetchHotel
   console.error("prep abort: city pages must load /api/hotels and show an honest empty state");
   process.exit(1);
 }
-if (!appjs.includes("&checkIn=") || !appjs.includes("&checkOut=") || !appjs.includes("function scheduleHotelRefresh")) {
+if (!appjs.includes("&checkIn=") || !appjs.includes("&checkOut=") || !appjs.includes("function scheduleHotelRefresh") || !appjs.includes("function syncStayUrl")) {
   console.error("prep abort: hotel fetch must send selected dates and refetch when they change");
   process.exit(1);
 }
