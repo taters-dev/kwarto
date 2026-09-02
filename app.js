@@ -1069,11 +1069,38 @@
     return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   }
 
+  // Pull the first few Booking.com pages so the sidebar has a real pool to
+  // sort, filter, and paginate locally (each API page is ~20–30 hotels).
+  const HOTEL_FETCH_PAGES = 2;
+
   function fetchHotels(place) {
-    return fetch("/api/hotels?city=" + encodeURIComponent(place))
-      .then((r) => r.json())
-      .then((j) => hotelsFrom(j))
-      .catch(() => []);
+    const ci = document.getElementById("checkin");
+    const co = document.getElementById("checkout");
+    let base = "/api/hotels?city=" + encodeURIComponent(place);
+    if (ci && ci.value) base += "&checkIn=" + encodeURIComponent(ci.value);
+    if (co && co.value) base += "&checkOut=" + encodeURIComponent(co.value);
+    const pages = [];
+    for (let p = 0; p < HOTEL_FETCH_PAGES; p++) {
+      pages.push(
+        fetch(base + "&page=" + p)
+          .then((r) => r.json())
+          .then((j) => hotelsFrom(j))
+          .catch(() => [])
+      );
+    }
+    return Promise.all(pages).then((lists) => {
+      const seen = new Set();
+      const out = [];
+      lists.forEach((list) => {
+        list.forEach((h) => {
+          const key = (h.id || h.name).toLowerCase();
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push(h);
+        });
+      });
+      return out;
+    });
   }
 
   function fillResults() {
