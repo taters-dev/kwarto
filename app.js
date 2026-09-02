@@ -96,7 +96,28 @@
     });
   };
   document.querySelectorAll(".nc-fx [data-cur]").forEach((btn) => {
-    btn.addEventListener("click", () => setCur(btn.getAttribute("data-cur")));
+    btn.addEventListener("click", () => {
+      setCur(btn.getAttribute("data-cur"));
+      document.dispatchEvent(new CustomEvent("kwarto:cur"));
+    });
+  });
+
+  // Homepage city rail arrows (NiteCrawler "Don't Skip These Trips" carousel).
+  const rail = document.querySelector("#destinations .dest-grid");
+  if (rail) {
+    const step = () => Math.max(240, Math.round(rail.clientWidth * 0.8));
+    document.querySelectorAll("[data-rail-prev]").forEach((b) => b.addEventListener("click", () => rail.scrollBy({ left: -step(), behavior: "smooth" })));
+    document.querySelectorAll("[data-rail-next]").forEach((b) => b.addEventListener("click", () => rail.scrollBy({ left: step(), behavior: "smooth" })));
+  }
+
+  // Results sidebar: collapse on phones.
+  document.querySelectorAll("[data-side-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const side = btn.closest("[data-hotel-side]");
+      if (!side) return;
+      const open = side.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
   });
   let startCur = "PHP";
   try { startCur = localStorage.getItem("tuloy-cur") || "PHP"; } catch (e) {}
@@ -153,30 +174,22 @@
     return { checkIn, checkOut, guests, children, childages };
   }
 
-  function tpWrap(destUrl, campaignId, p) {
-    const u = new URL("https://tp.media/r");
-    u.searchParams.set("campaign_id", String(campaignId));
-    u.searchParams.set("marker", "771660");
-    u.searchParams.set("p", String(p));
-    u.searchParams.set("trs", "568222");
-    u.searchParams.set("u", destUrl);
-    return u.toString();
-  }
+  const BOOKING_AFFILIATE_ID = "";
 
-  function klookDest(query) {
-    const { checkIn, checkOut, guests, children } = stayDates();
-    const u = new URL("https://www.klook.com/hotels/");
-    if (query) u.searchParams.set("keyword", query);
-    if (checkIn) u.searchParams.set("check_in", checkIn);
-    if (checkOut) u.searchParams.set("check_out", checkOut);
-    u.searchParams.set("adult_num", String(guests || 2));
-    u.searchParams.set("child_num", String(children || 0));
-    u.searchParams.set("room_num", "1");
+  function bookingUrl(query, city) {
+    const { checkIn, checkOut, guests } = stayDates();
+    const u = new URL("https://www.booking.com/searchresults.html");
+    let searchQuery = query || "";
+    if (city && searchQuery.toLowerCase().indexOf(city.toLowerCase()) === -1) {
+      searchQuery = searchQuery + " " + city;
+    }
+    if (searchQuery) u.searchParams.set("ss", searchQuery.trim());
+    if (checkIn) u.searchParams.set("checkin", checkIn);
+    if (checkOut) u.searchParams.set("checkout", checkOut);
+    u.searchParams.set("group_adults", String(guests || 2));
+    u.searchParams.set("no_rooms", "1");
+    if (BOOKING_AFFILIATE_ID) u.searchParams.set("aid", BOOKING_AFFILIATE_ID);
     return u.toString();
-  }
-
-  function klookWrap(query) {
-    return tpWrap(klookDest(query), 137, 4110);
   }
 
   function destQuery(dest, typed) {
@@ -522,19 +535,139 @@
     return h3 ? String(h3.textContent || "").trim() : "";
   }
 
+  function bindGalleries() {
+    document.querySelectorAll(".hotel-card-gallery").forEach((gallery) => {
+      if (gallery.getAttribute("data-bound-gallery") === "1") return;
+      gallery.setAttribute("data-bound-gallery", "1");
+      
+      const track = gallery.querySelector(".gallery-track");
+      const hotelId = gallery.getAttribute("data-hotel-id");
+      let photos = [];
+      let currentIndex = 0;
+      let photosLoaded = false;
+      
+      function goToSlide(index) {
+        if (photos.length <= 1) return;
+        if (index < 0) index = photos.length - 1;
+        if (index >= photos.length) index = 0;
+        currentIndex = index;
+        if (track) track.style.transform = "translateX(-" + (currentIndex * 100) + "%)";
+        gallery.querySelectorAll(".gallery-dot").forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+      }
+      
+      function loadPhotos() {
+        if (photosLoaded || !hotelId) return;
+        photosLoaded = true;
+        gallery.setAttribute("data-photos-loaded", "loading");
+        
+        fetch("/api/hotels/photos?hotelId=" + hotelId)
+          .then(r => r.json())
+          .then(data => {
+            if (data.photos && data.photos.length > 1) {
+              photos = data.photos;
+              
+              // Rebuild track with all photos
+              track.innerHTML = "";
+              photos.forEach((photoUrl, idx) => {
+                const slide = document.createElement("div");
+                slide.className = "gallery-slide";
+                const img = document.createElement("img");
+                img.src = photoUrl;
+                img.alt = "Photo " + (idx + 1);
+                img.loading = idx === 0 ? "eager" : "lazy";
+                img.decoding = "async";
+                slide.appendChild(img);
+                track.appendChild(slide);
+              });
+              
+              // Add dots
+              const dots = document.createElement("div");
+              dots.className = "gallery-dots";
+              photos.forEach((_, idx) => {
+                const dot = document.createElement("span");
+                dot.className = "gallery-dot" + (idx === 0 ? " active" : "");
+                dots.appendChild(dot);
+              });
+              gallery.appendChild(dots);
+              
+              // Add navigation
+              const prevBtn = document.createElement("button");
+              prevBtn.className = "gallery-nav gallery-prev";
+              prevBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
+              gallery.appendChild(prevBtn);
+              
+              const nextBtn = document.createElement("button");
+              nextBtn.className = "gallery-nav gallery-next";
+              nextBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+              gallery.appendChild(nextBtn);
+              
+              // Remove swipe hint
+              const hint = gallery.querySelector(".gallery-swipe-hint");
+              if (hint) hint.remove();
+              
+              prevBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex - 1);
+              });
+              
+              nextBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex + 1);
+              });
+              
+              gallery.setAttribute("data-photos-loaded", "true");
+            } else {
+              gallery.setAttribute("data-photos-loaded", "single");
+              const hint = gallery.querySelector(".gallery-swipe-hint");
+              if (hint) hint.remove();
+            }
+          })
+          .catch(() => {
+            gallery.setAttribute("data-photos-loaded", "error");
+            const hint = gallery.querySelector(".gallery-swipe-hint");
+            if (hint) hint.remove();
+          });
+      }
+      
+      // Touch swipe support - also triggers lazy load
+      let touchStartX = 0;
+      gallery.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        loadPhotos();
+      }, { passive: true });
+      
+      gallery.addEventListener("touchend", (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50 && photos.length > 1) {
+          goToSlide(diff > 0 ? currentIndex + 1 : currentIndex - 1);
+        }
+      }, { passive: true });
+      
+      // Mouse hover also triggers lazy load
+      gallery.addEventListener("mouseenter", loadPhotos);
+    });
+  }
+
   function bindHotelCards() {
     document.querySelectorAll(".hotel-list .dest-card, .hotel-list .hotel-card-v2").forEach((card) => {
       const name = hotelCardName(card);
       if (name && !card.getAttribute("data-hotel-name")) card.setAttribute("data-hotel-name", name);
       if (card.getAttribute("data-bound-hotel") === "1") return;
       card.setAttribute("data-bound-hotel", "1");
+      card.setAttribute("title", "Search for " + name + " on Booking.com");
       card.addEventListener("click", (e) => {
+        // Don't navigate if clicking gallery controls
+        if (e.target.closest(".gallery-nav") || e.target.closest(".gallery-dot")) return;
         const hotelName = hotelCardName(card);
         if (!hotelName) return;
         e.preventDefault();
-        window.open(klookWrap(hotelName), "_blank", "noopener");
+        window.open(bookingUrl(hotelName, hotelPlace), "_blank", "noopener");
       });
     });
+    bindGalleries();
   }
 
   function bindContinue() {
@@ -542,7 +675,8 @@
       if (el.getAttribute("data-bound-continue") === "1") return;
       el.setAttribute("data-bound-continue", "1");
       const q = (el.getAttribute("data-hotel-name") || el.getAttribute("data-city") || "Cebu").trim();
-      const url = klookWrap(q);
+      const city = el.getAttribute("data-city") || hotelPlace || "Cebu";
+      const url = bookingUrl(q, city);
       if (el.tagName === "A") {
         el.href = url;
         el.target = "_blank";
@@ -576,9 +710,11 @@
       const key = String((h && (h.id || h.hotelId)) || name).toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
+      
       out.push({
+        id: h && (h.id || h.hotelId) ? String(h.id || h.hotelId) : "",
         name: name,
-        image: h && h.image ? String(h.image) : (h && h.photo ? String(h.photo) : ""),
+        image: h && h.photo ? String(h.photo) : (h && h.image ? String(h.image) : ""),
         deepLink: h && h.deepLink ? String(h.deepLink) : "",
         provider: h && h.provider ? String(h.provider) : "",
         stars: h && h.stars ? Number(h.stars) : 0,
@@ -602,10 +738,20 @@
   function renderHotelArticle(hotel) {
     const name = displayHotelName(hotel);
     const safe = escapeHtml(name);
-    const image = hotel && hotel.image ? String(hotel.image) : "";
-    const photo = image
-      ? '<img src="' + escapeHtml(image) + '" alt="' + safe + '" loading="lazy" decoding="async" />'
-      : '';
+    const hotelId = hotel && hotel.id ? hotel.id : "";
+    
+    // Start with single photo - more photos loaded lazily on interaction
+    const initialPhoto = (hotel && hotel.image) || "";
+    
+    // Build gallery HTML with single photo and swipe hint
+    let galleryHtml = '<div class="hotel-card-gallery" data-hotel-id="' + hotelId + '" data-photos-loaded="false">';
+    galleryHtml += '<div class="gallery-track">';
+    if (initialPhoto) {
+      galleryHtml += '<div class="gallery-slide"><img src="' + escapeHtml(initialPhoto) + '" alt="' + safe + '" loading="eager" decoding="async" /></div>';
+    }
+    galleryHtml += '</div>';
+    galleryHtml += '<div class="gallery-swipe-hint"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>';
+    galleryHtml += '</div>';
     
     let locationHtml = "";
     if (hotel && (hotel.district || hotel.city)) {
@@ -658,26 +804,140 @@
       footerHtml = '<div class="hotel-card-footer">' + footerParts.join("") + '</div>';
     }
     
-    return '<a class="hotel-card-v2" href="#" data-hotel-name="' + safe + '">' +
-      '<div class="hotel-card-image">' + photo + '</div>' +
+    return '<a class="hotel-card-v2" href="' + escapeHtml(bookingUrl(name, hotelPlace)) + '" target="_blank" rel="noopener" data-hotel-name="' + safe + '" title="Search for ' + safe + ' on Booking.com">' +
+      galleryHtml +
       '<div class="hotel-card-content">' +
       '<h3 class="hotel-card-name">' + safe + '</h3>' +
       locationHtml +
       starsHtml +
       badgesHtml +
       footerHtml +
+      '<span class="hotel-card-cta">See Rates on Booking.com</span>' +
       '</div></a>';
   }
+
+  // Sidebar sort + filters (results pages). Prices compare in the displayed currency.
+  const hotelView = { sort: "recommended", min: null, max: null, cancel: false };
+
+  function priceShown(usd) {
+    if (!usd) return null;
+    return currency() === "USD" ? usd : Math.round(usd * RATE);
+  }
+
+  function applyHotelView(list) {
+    let out = list.slice();
+    const priced = hotelView.min != null || hotelView.max != null;
+    if (priced) {
+      out = out.filter((h) => {
+        const p = priceShown(h.priceUSD);
+        if (p == null) return false;
+        if (hotelView.min != null && p < hotelView.min) return false;
+        if (hotelView.max != null && p > hotelView.max) return false;
+        return true;
+      });
+    }
+    if (hotelView.cancel) out = out.filter((h) => h.hasFreeCancellation);
+    const num = (v) => (v == null || isNaN(v) ? null : Number(v));
+    const desc = (get) => (a, b) => (num(get(b)) || 0) - (num(get(a)) || 0);
+    if (hotelView.sort === "stars") out.sort(desc((h) => h.stars));
+    else if (hotelView.sort === "rating") out.sort(desc((h) => h.rating));
+    else if (hotelView.sort === "price-asc") {
+      out.sort((a, b) => (num(a.priceUSD) == null ? Infinity : a.priceUSD) - (num(b.priceUSD) == null ? Infinity : b.priceUSD));
+    } else if (hotelView.sort === "price-desc") out.sort(desc((h) => h.priceUSD));
+    return out;
+  }
+
+  function hotelViewActive() {
+    return hotelView.sort !== "recommended" || hotelView.min != null || hotelView.max != null || hotelView.cancel;
+  }
+
+  function renderFilterEmpty() {
+    return '<div class="hotel-empty" data-city-empty>' +
+      '<p class="hotel-list-status">No hotels match these filters. Loosen the price range or turn off free cancellation.</p>' +
+      '<button type="button" class="cta" data-filter-clear>Clear All Filters</button>' +
+      "</div>";
+  }
+
+  function bindHotelView() {
+    document.querySelectorAll("[data-sort]").forEach((btn) => {
+      if (btn.getAttribute("data-bound-sort") === "1") return;
+      btn.setAttribute("data-bound-sort", "1");
+      btn.addEventListener("click", () => {
+        hotelView.sort = btn.getAttribute("data-sort") || "recommended";
+        document.querySelectorAll("[data-sort]").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("is-on", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        hotelPage = 1;
+        paintHotelPage();
+      });
+    });
+    let priceTimer = 0;
+    const readPrice = (el) => {
+      const v = parseFloat(el.value);
+      return isNaN(v) || el.value === "" ? null : v;
+    };
+    document.querySelectorAll("[data-price-min], [data-price-max]").forEach((el) => {
+      if (el.getAttribute("data-bound-price") === "1") return;
+      el.setAttribute("data-bound-price", "1");
+      el.addEventListener("input", () => {
+        clearTimeout(priceTimer);
+        priceTimer = setTimeout(() => {
+          const minEl = document.querySelector("[data-price-min]");
+          const maxEl = document.querySelector("[data-price-max]");
+          hotelView.min = minEl ? readPrice(minEl) : null;
+          hotelView.max = maxEl ? readPrice(maxEl) : null;
+          hotelPage = 1;
+          paintHotelPage();
+        }, 250);
+      });
+    });
+    document.querySelectorAll("[data-filter-cancel]").forEach((el) => {
+      if (el.getAttribute("data-bound-cancel") === "1") return;
+      el.setAttribute("data-bound-cancel", "1");
+      el.addEventListener("change", () => {
+        hotelView.cancel = !!el.checked;
+        hotelPage = 1;
+        paintHotelPage();
+      });
+    });
+    document.querySelectorAll("[data-filter-clear]").forEach((el) => {
+      if (el.getAttribute("data-bound-clear") === "1") return;
+      el.setAttribute("data-bound-clear", "1");
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        hotelView.sort = "recommended";
+        hotelView.min = null;
+        hotelView.max = null;
+        hotelView.cancel = false;
+        document.querySelectorAll("[data-sort]").forEach((b) => {
+          const on = b.getAttribute("data-sort") === "recommended";
+          b.classList.toggle("is-on", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        document.querySelectorAll("[data-price-min], [data-price-max]").forEach((i) => { i.value = ""; });
+        document.querySelectorAll("[data-filter-cancel]").forEach((i) => { i.checked = false; });
+        hotelPage = 1;
+        paintHotelPage();
+      });
+    });
+    document.querySelectorAll("[data-price-cur]").forEach((el) => { el.textContent = currency(); });
+  }
+  document.addEventListener("kwarto:cur", () => {
+    document.querySelectorAll("[data-price-cur]").forEach((el) => { el.textContent = currency(); });
+    if (hotelNames.length && (hotelView.min != null || hotelView.max != null)) paintHotelPage();
+  });
 
   function renderEmptyCity(place, hotelName) {
     const q = hotelName || place;
     const safeQ = escapeHtml(q);
     const status = hotelName
-      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Klook. A full city list needs a partner hotel feed."
-      : "Hotels in " + escapeHtml(place) + " will list here when Klook sends a city feed. Compare on Klook with your dates.";
+      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Booking.com. A full city list needs a partner hotel feed."
+      : "Hotels in " + escapeHtml(place) + " will list here when we have a city feed. Compare on Booking.com with your dates.";
     return '<div class="hotel-empty" data-city-empty>' +
       '<p class="hotel-list-status">' + status + "</p>" +
-      '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Klook</a>' +
+      '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Booking.com</a>' +
       "</div>";
   }
 
@@ -717,13 +977,21 @@
     const next = document.querySelector("[data-page-next]");
     const status = document.querySelector("[data-page-status]");
     if (!list) return;
-    const unique = hotelNames;
-    if (!unique.length) {
+    bindHotelView();
+    if (!hotelNames.length) {
       const pickedHotel = (params.get("hotel") || "").trim();
       list.innerHTML = renderEmptyCity(hotelPlace || "this city", pickedHotel.split(",")[0].trim());
-      if (countEl) countEl.textContent = "Compare on Klook";
+      if (countEl) countEl.textContent = "Compare on Booking.com";
       if (pager) pager.hidden = true;
       bindContinue();
+      return;
+    }
+    const unique = applyHotelView(hotelNames);
+    if (!unique.length) {
+      list.innerHTML = renderFilterEmpty();
+      if (countEl) countEl.textContent = "0 of " + hotelNames.length + " hotels";
+      if (pager) pager.hidden = true;
+      bindHotelView();
       return;
     }
     const pages = Math.max(1, Math.ceil(unique.length / HOTEL_PAGE_SIZE));
@@ -732,7 +1000,11 @@
     const start = (hotelPage - 1) * HOTEL_PAGE_SIZE;
     const slice = unique.slice(start, start + HOTEL_PAGE_SIZE);
     list.innerHTML = slice.map(renderHotelArticle).join("");
-    if (countEl) countEl.textContent = unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    if (countEl) {
+      countEl.textContent = hotelViewActive() && unique.length !== hotelNames.length
+        ? unique.length + " of " + hotelNames.length + " hotels"
+        : unique.length + (unique.length === 1 ? " hotel" : " hotels");
+    }
     if (pager) pager.hidden = unique.length <= HOTEL_PAGE_SIZE;
     if (status) {
       const from = start + 1;
@@ -797,11 +1069,38 @@
     return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   }
 
+  // Pull the first few Booking.com pages so the sidebar has a real pool to
+  // sort, filter, and paginate locally (each API page is ~20–30 hotels).
+  const HOTEL_FETCH_PAGES = 2;
+
   function fetchHotels(place) {
-    return fetch("/api/hotels?city=" + encodeURIComponent(place))
-      .then((r) => r.json())
-      .then((j) => hotelsFrom(j))
-      .catch(() => []);
+    const ci = document.getElementById("checkin");
+    const co = document.getElementById("checkout");
+    let base = "/api/hotels?city=" + encodeURIComponent(place);
+    if (ci && ci.value) base += "&checkIn=" + encodeURIComponent(ci.value);
+    if (co && co.value) base += "&checkOut=" + encodeURIComponent(co.value);
+    const pages = [];
+    for (let p = 0; p < HOTEL_FETCH_PAGES; p++) {
+      pages.push(
+        fetch(base + "&page=" + p)
+          .then((r) => r.json())
+          .then((j) => hotelsFrom(j))
+          .catch(() => [])
+      );
+    }
+    return Promise.all(pages).then((lists) => {
+      const seen = new Set();
+      const out = [];
+      lists.forEach((list) => {
+        list.forEach((h) => {
+          const key = (h.id || h.name).toLowerCase();
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push(h);
+        });
+      });
+      return out;
+    });
   }
 
   function fillResults() {
@@ -818,6 +1117,9 @@
     if (head) {
       head.textContent = short;
       document.title = short + " hotels — Kwarto";
+    }
+    if (place && searchForm && searchForm.city && !searchForm.city.value) {
+      searchForm.city.value = place;
     }
     const pickedHotel = (params.get("hotel") || "").trim();
     if (!place && !pickedHotel) {

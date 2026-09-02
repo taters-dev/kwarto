@@ -38,8 +38,19 @@ async function findDestination(query) {
   }
 }
 
-async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
+async function searchHotels(destId, destType, checkIn, checkOut, options = {}) {
   if (!RAPIDAPI_KEY) return null;
+  
+  const {
+    page = 0,
+    sortBy = "popularity",
+    minPrice = "",
+    maxPrice = "",
+    minRating = "",
+    stars = "",
+    freeCancellation = false,
+    freeParking = false
+  } = options;
   
   const params = new URLSearchParams({
     dest_ids: destId,
@@ -48,11 +59,19 @@ async function searchHotels(destId, destType, checkIn, checkOut, page = 0) {
     departure_date: checkOut,
     room_qty: "1",
     guest_qty: "2",
-    order_by: "popularity",
+    order_by: sortBy,
     languagecode: "en-us",
     currency_code: "USD",
     page_number: String(page)
   });
+  
+  // Add optional filters
+  if (minPrice) params.set("price_filter_currencycode", "USD");
+  if (minPrice) params.set("price_min", minPrice);
+  if (maxPrice) params.set("price_max", maxPrice);
+  if (stars) params.set("class_filter", stars);
+  if (freeCancellation) params.set("nflt", "fc=1");
+  if (minRating) params.set("review_score", minRating);
   
   const url = `https://${RAPIDAPI_HOST}/properties/v2/list?${params.toString()}`;
   
@@ -81,6 +100,17 @@ export async function GET(request) {
   const page = parseInt(params.get("page") || "0", 10);
   const city = params.get("city") || "Cebu";
   
+  // Sorting
+  const sortBy = params.get("sortBy") || "popularity";
+  
+  // Filters
+  const minPrice = params.get("minPrice") || "";
+  const maxPrice = params.get("maxPrice") || "";
+  const minRating = params.get("minRating") || "";
+  const stars = params.get("stars") || "";
+  const freeCancellation = params.get("freeCancellation") === "true";
+  const freeParking = params.get("freeParking") === "true";
+  
   if (!RAPIDAPI_KEY) {
     return Response.json({
       error: "RAPIDAPI_KEY environment variable not configured",
@@ -103,7 +133,18 @@ export async function GET(request) {
     });
   }
   
-  const data = await searchHotels(destination.dest_id, destination.dest_type, checkIn, checkOut, page);
+  const searchOptions = {
+    page,
+    sortBy,
+    minPrice,
+    maxPrice,
+    minRating,
+    stars,
+    freeCancellation,
+    freeParking
+  };
+  
+  const data = await searchHotels(destination.dest_id, destination.dest_type, checkIn, checkOut, searchOptions);
   
   if (!data || !data.result) {
     return Response.json({
@@ -117,10 +158,12 @@ export async function GET(request) {
     });
   }
   
-  const results = data.result
-    .filter(item => item.type === "property_card" && item.hotel_id)
-    .slice(0, 12)
-    .map(hotel => {
+  // Return the full Booking.com page (typically 20–30 properties); the client
+  // sorts, filters, and paginates locally. Photos are fetched lazily via /api/hotels/photos.
+  const hotelItems = data.result
+    .filter(item => item.type === "property_card" && item.hotel_id);
+  
+  const results = hotelItems.map(hotel => {
       const priceBreakdown = hotel.composite_price_breakdown;
       let priceUSD = null;
       
@@ -130,8 +173,9 @@ export async function GET(request) {
         priceUSD = Math.round(priceBreakdown.gross_amount.value / 3);
       }
       
-      const photoUrl = hotel.main_photo_url || null;
-      const photo = photoUrl ? photoUrl.replace('/square60/', '/max300/') : null;
+      // Main photo from list endpoint - additional photos fetched lazily
+      const mainPhotoUrl = hotel.main_photo_url || null;
+      const photo = mainPhotoUrl ? mainPhotoUrl.replace('/square60/', '/max500/') : null;
       
       return {
         id: hotel.hotel_id,
@@ -151,13 +195,28 @@ export async function GET(request) {
       };
     });
   
+  const totalCount = data.primary_count || results.length;
+  const pageSize = results.length;
+  const hasMore = pageSize > 0 && (page + 1) * pageSize < totalCount;
+  
   return Response.json({
     checkIn,
     checkOut,
     currency,
     city: destination.city_name || city,
     page,
-    totalCount: data.primary_count || results.length,
+    pageSize,
+    totalCount,
+    hasMore,
+    filters: {
+      sortBy,
+      minPrice: minPrice || null,
+      maxPrice: maxPrice || null,
+      minRating: minRating || null,
+      stars: stars || null,
+      freeCancellation,
+      freeParking
+    },
     hotels: results,
     hasKey: !!RAPIDAPI_KEY
   });
