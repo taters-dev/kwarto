@@ -711,6 +711,8 @@
       if (seen.has(key)) return;
       seen.add(key);
       
+      const priceUSD = h && h.priceUSD ? Number(h.priceUSD) : null;
+      if (!priceUSD) return;
       out.push({
         id: h && (h.id || h.hotelId) ? String(h.id || h.hotelId) : "",
         name: name,
@@ -720,7 +722,7 @@
         stars: h && h.stars ? Number(h.stars) : 0,
         rating: h && h.rating ? Number(h.rating) : null,
         reviewCount: h && h.reviewCount ? Number(h.reviewCount) : 0,
-        priceUSD: h && h.priceUSD ? Number(h.priceUSD) : null,
+        priceUSD: priceUSD,
         district: h && h.district ? String(h.district) : "",
         city: h && h.city ? String(h.city) : "",
         hasFreeCancellation: !!(h && h.hasFreeCancellation),
@@ -932,9 +934,11 @@
   function renderEmptyCity(place, hotelName) {
     const q = hotelName || place;
     const safeQ = escapeHtml(q);
+    const { checkIn, checkOut } = stayDates();
+    const dates = checkIn && checkOut ? " for " + checkIn + " to " + checkOut : "";
     const status = hotelName
-      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Booking.com. A full city list needs a partner hotel feed."
-      : "Hotels in " + escapeHtml(place) + " will list here when we have a city feed. Compare on Booking.com with your dates.";
+      ? "You searched " + escapeHtml(hotelName) + ". Compare that stay on Booking.com."
+      : "No hotels available on Booking.com in " + escapeHtml(place) + dates + ". Try different dates, or compare on Booking.com.";
     return '<div class="hotel-empty" data-city-empty>' +
       '<p class="hotel-list-status">' + status + "</p>" +
       '<a class="cta" data-continue data-hotel-name="' + safeQ + '" href="#">Continue on Booking.com</a>' +
@@ -1018,9 +1022,9 @@
     bindContinue();
   }
 
-  function paintHotelNames(names) {
+  function paintHotelNames(names, resetPage) {
     hotelNames = uniqueHotelNames(names);
-    hotelPage = pageFromUrl();
+    hotelPage = resetPage ? 1 : pageFromUrl();
     paintHotelPage();
   }
 
@@ -1074,11 +1078,15 @@
   const HOTEL_FETCH_PAGES = 2;
 
   function fetchHotels(place) {
-    const ci = document.getElementById("checkin");
-    const co = document.getElementById("checkout");
+    const { checkIn, checkOut, guests, children, childages } = stayDates();
     let base = "/api/hotels?city=" + encodeURIComponent(place);
-    if (ci && ci.value) base += "&checkIn=" + encodeURIComponent(ci.value);
-    if (co && co.value) base += "&checkOut=" + encodeURIComponent(co.value);
+    if (checkIn) base += "&checkIn=" + encodeURIComponent(checkIn);
+    if (checkOut) base += "&checkOut=" + encodeURIComponent(checkOut);
+    if (guests) base += "&guests=" + encodeURIComponent(guests);
+    if (Number(children) > 0) {
+      base += "&children=" + encodeURIComponent(children);
+      if (childages) base += "&childages=" + encodeURIComponent(childages);
+    }
     const pages = [];
     for (let p = 0; p < HOTEL_FETCH_PAGES; p++) {
       pages.push(
@@ -1103,7 +1111,7 @@
     });
   }
 
-  function fillResults() {
+  function fillResults(opts) {
     const list = document.querySelector("[data-results-list]");
     if (!list) return;
     bindHotelPager();
@@ -1126,16 +1134,24 @@
       paintHotelNames([]);
       return;
     }
-    if (!list.querySelector(".dest-card") && !list.querySelector("[data-city-empty]")) {
-      list.innerHTML = '<p class="hotel-list-status">Finding hotels…</p>';
-    }
+    list.innerHTML = '<p class="hotel-list-status">Finding hotels available for your dates…</p>';
     fetchHotels(place || short)
       .then((hotels) => {
-        paintHotelNames(hotels);
+        paintHotelNames(hotels, !!(opts && opts.resetPage));
       })
       .catch(() => {
-        paintHotelNames([]);
+        paintHotelNames([], true);
       });
+  }
+
+  let hotelRefreshTimer = 0;
+  function scheduleHotelRefresh() {
+    const list = document.querySelector("[data-results-list]");
+    if (!list) return;
+    const { checkIn, checkOut } = stayDates();
+    if (!checkIn || !checkOut) return;
+    clearTimeout(hotelRefreshTimer);
+    hotelRefreshTimer = setTimeout(() => fillResults({ resetPage: true }), 80);
   }
 
   bindHotelCards();
@@ -1150,6 +1166,7 @@
     el.addEventListener("input", bindCebuCard);
     el.addEventListener("change", bindDestCards);
     el.addEventListener("input", bindDestCards);
+    el.addEventListener("change", scheduleHotelRefresh);
   });
   document.addEventListener("pointerdown", (e) => {
     const card = e.target && e.target.closest ? e.target.closest("a.dest-card") : null;

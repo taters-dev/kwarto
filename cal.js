@@ -42,6 +42,7 @@
   var start = inEl.value || "2026-09-12";
   var end = outEl.value || "2026-09-15";
   var picking = "in";
+  var lastEmitted = start + "|" + end;
 
   function pad(n) { return n < 10 ? "0" + n : String(n); }
   function ymd(d) {
@@ -174,11 +175,23 @@
     placePanel();
     requestAnimationFrame(placePanel);
   }
+  function emitDateChange() {
+    if (!start || !end || end <= start) return;
+    var key = start + "|" + end;
+    if (key === lastEmitted) return;
+    lastEmitted = key;
+    inEl.value = start;
+    outEl.value = end;
+    try {
+      inEl.dispatchEvent(new Event("change", { bubbles: true }));
+    } catch (e) {}
+  }
   function closeCal() {
     ensureNight();
     root.hidden = true;
     document.body.classList.remove("cal-open");
     paintTriggers();
+    emitDateChange();
   }
   function addDay(s) {
     var d = parseYmd(s);

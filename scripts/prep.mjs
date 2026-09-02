@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels12";
+const cacheBust = "hotels13";
 const need = ["index.html", "cebu.html", "hotel.html", "results.html", "cal.js", "guests.js", "app.js", "styles.css"];
 
 function applyCacheBust(html) {
@@ -34,6 +34,7 @@ for (const name of need) {
 
 const index = readFileSync(join("public", "index.html"), "utf8");
 const appjs = readFileSync(join("public", "app.js"), "utf8");
+const caljs = readFileSync(join("public", "cal.js"), "utf8");
 const cssOut = readFileSync(join("public", "styles.css"), "utf8");
 const guests = readFileSync(join("public", "guests.js"), "utf8");
 
@@ -340,12 +341,24 @@ if (hotelsRoute.includes("GetUnifiedSuggestResult") || hotelsRoute.includes("ago
   console.error("prep abort: /api/hotels must not use Agoda");
   process.exit(1);
 }
+if (isRapidAPI && !hotelsRoute.includes("isAvailableOnBooking") && !hotelsRoute.includes("availableOnly")) {
+  console.error("prep abort: /api/hotels must keep only hotels available on Booking.com for the selected dates");
+  process.exit(1);
+}
 if (appjs.includes("/api/dest?q=") && appjs.includes("extra.hotels") && appjs.includes("fetchSuggest(q, null, extra)")) {
   console.error("prep abort: city hotel list must not load Agoda dest hotels");
   process.exit(1);
 }
 if (!appjs.includes("/api/hotels?city=") || !appjs.includes("function fetchHotels") || !appjs.includes("function renderEmptyCity")) {
   console.error("prep abort: city pages must load /api/hotels and show an honest empty state");
+  process.exit(1);
+}
+if (!appjs.includes("&checkIn=") || !appjs.includes("&checkOut=") || !appjs.includes("function scheduleHotelRefresh")) {
+  console.error("prep abort: hotel fetch must send selected dates and refetch when they change");
+  process.exit(1);
+}
+if (!caljs.includes("function emitDateChange") || !caljs.includes('dispatchEvent(new Event("change"')) {
+  console.error("prep abort: calendar must notify the hotel list when dates change");
   process.exit(1);
 }
 if (appjs.includes("kind: \"agoda\"")) {
