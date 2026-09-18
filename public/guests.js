@@ -10,6 +10,7 @@
   var children = clamp(parseInt((childrenEl && childrenEl.value) || "0", 10) || 0, 0, 4);
   var ages = parseAges(agesEl && agesEl.value);
   var picking = -1;
+  var lastEmitted = adults + "|" + children + "|" + ages.join(",");
 
   function clamp(n, lo, hi) {
     return Math.max(lo, Math.min(hi, n));
@@ -176,11 +177,20 @@
     placePanel();
     requestAnimationFrame(placePanel);
   }
+  function emitGuestChange() {
+    var key = adults + "|" + children + "|" + ages.join(",");
+    if (key === lastEmitted) return;
+    lastEmitted = key;
+    try {
+      guestsEl.dispatchEvent(new Event("change", { bubbles: true }));
+    } catch (e) {}
+  }
   function closeGuest() {
     closeAgeList();
     root.hidden = true;
     document.body.classList.remove("guest-open");
     paint();
+    emitGuestChange();
   }
   function tryDone() {
     if (!agesReady()) {

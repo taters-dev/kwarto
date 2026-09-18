@@ -1,6 +1,6 @@
 # Kwarto
 
-A hotel booking site for Filipinos. Search hotels in the Philippines, see prices in PHP or USD, and book through Klook.
+A hotel booking site for Filipinos. Search hotels in the Philippines, see prices in PHP or USD, and book through Booking.com.
 
 ## Getting Started
 
@@ -32,6 +32,7 @@ export RAPIDAPI_KEY=your_key_here
 With a valid `RAPIDAPI_KEY`, the site will:
 - Display **real hotel photos** from Booking.com
 - Show **live pricing** for the selected dates
+- List **only hotels available on Booking.com** for those dates
 - Display **ratings and review counts**
 - Support PHP and USD currency conversion
 
@@ -41,17 +42,21 @@ Without the key, the site falls back to placeholder Unsplash images and no price
 
 ### `/api/hotels`
 
-Fetches hotel data with images and rates from Travel Payouts.
+Fetches hotels that are available on Booking.com for the selected stay.
 
 **Query Parameters:**
-- `location` - Location name or ID (default: "cebu")
-- `checkIn` - Check-in date in YYYY-MM-DD format
-- `checkOut` - Check-out date in YYYY-MM-DD format  
+- `city` or `location` - City name (default: "Cebu")
+- `checkIn` / `checkin` - Check-in date in YYYY-MM-DD format
+- `checkOut` / `checkout` - Check-out date in YYYY-MM-DD format
+- `guests` - Number of adults (default: 2)
+- `children` - Number of children (default: 0)
 - `currency` - Currency code: USD or PHP (default: USD)
+
+Hotels without a bookable Booking.com rate for those dates are omitted.
 
 **Example:**
 ```
-/api/hotels?location=cebu&checkIn=2026-09-12&checkOut=2026-09-15&currency=USD
+/api/hotels?city=cebu&checkIn=2026-09-12&checkOut=2026-09-15&currency=USD
 ```
 
 ### `/api/dest`
@@ -65,5 +70,5 @@ Search destinations for the typeahead autocomplete.
 
 - Next.js 15
 - React 19
-- Travel Payouts API (hotels data)
-- Klook (booking partner via Travel Payouts affiliate links)
+- Booking.com via RapidAPI (hotel availability, photos, and rates)
+- Booking.com (booking partner)
