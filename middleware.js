@@ -5,6 +5,11 @@ const RESERVED = new Set([
   "api",
   "hotel",
   "results",
+  "blog",
+  "blog.html",
+  "blog-post.html",
+  "blog.js",
+  "blog-posts.js",
   "cebu.html",
   "index.html",
   "hotel.html",
@@ -37,6 +42,13 @@ export function middleware(request) {
   if (pathname === "/results") {
     return NextResponse.rewrite(new URL("/results.html", request.url));
   }
+  if (pathname === "/blog" || pathname === "/blog/") {
+    return NextResponse.rewrite(new URL("/blog.html", request.url));
+  }
+  if (/^\/blog\/[^/]+\/?$/.test(pathname)) {
+    // Article template; blog.js reads the slug from location.pathname.
+    return NextResponse.rewrite(new URL("/blog-post.html", request.url));
+  }
   if (isCitySlug(pathname)) {
     return NextResponse.rewrite(new URL("/results.html", request.url));
   }
@@ -44,5 +56,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/", "/((?!api/|_next/|styles\\.css|app\\.js|cal\\.js|guests\\.js).*)"],
+  matcher: ["/", "/((?!api/|_next/|styles\\.css|app\\.js|cal\\.js|guests\\.js|blog\\.js|blog-posts\\.js).*)"],
 };

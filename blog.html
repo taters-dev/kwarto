@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hotel deals &amp; guides — Kwarto Blog</title>
+  <meta name="description" content="Hotels spotted on nitecrawler.com, written up honestly — the rate, the resort fee, and whether we'd book it. From Beverly Hills to Las Vegas to Cebu. Hotels only — no flights, no packages." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&family=Red+Hat+Display:ital,wght@0,700;0,800;1,700;1,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css?v=hotels11" />
+</head>
+<body class="nc" data-blog-page>
+  <a class="skip" href="#main">Skip to content</a>
+  <a class="nc-mobile-bar" href="mailto:hello@staytuloy.com">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+    Need help? hello@staytuloy.com
+  </a>
+  <header class="nc-top">
+    <div class="wrap nc-top-inner">
+      <a class="nc-logo" href="/" aria-label="Kwarto home">
+        <img class="nc-logo-img" src="/brand/kwarto-wordmark.png" alt="Kwarto" />
+      </a>
+      <nav class="nc-top-links" aria-label="Site">
+        <a class="nc-top-help" href="mailto:hello@staytuloy.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          hello@staytuloy.com
+        </a>
+        <a href="/#search">Search</a>
+        <a href="/#destinations">Destinations</a>
+        <a href="/blog" aria-current="page">Blog</a>
+        <div class="nc-fx" role="group" aria-label="Currency">
+          <button type="button" data-cur="PHP" class="is-on">PHP</button>
+          <button type="button" data-cur="USD">USD</button>
+        </div>
+        <a class="nc-member" href="/#search">Find My Hotel</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="blog-hero">
+      <div class="nc-red-wash" aria-hidden="true"></div>
+      <img class="nc-leaf-loose nc-leaf-tl" src="/brand/leaves-simple.png" alt="" />
+      <div class="wrap blog-hero-inner">
+        <p class="blog-kicker">Deals &amp; guides</p>
+        <h1>Hotels worth the detour.</h1>
+        <p class="nc-sub">Hotels we spot on <a href="https://www.nitecrawler.com" target="_blank" rel="noopener nofollow">nitecrawler.com</a>, written up honestly — the rate, the resort fee, and whether we'd book it. From Beverly Hills to the Strip to Cebu. Hotels only. No flights, no packages.</p>
+      </div>
+      <svg class="nc-wave" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true"><path d="M0,88 C160,150 330,34 540,58 C740,82 830,152 1040,124 C1230,98 1330,30 1440,74 L1440,150 L0,150 Z"/></svg>
+    </section>
+
+    <section class="section blog-feed" id="posts">
+      <div class="wrap">
+        <div class="blog-toolbar">
+          <nav class="nc-chips" aria-label="Filter posts">
+            <button type="button" class="nc-chip is-on" data-blog-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="nc-chip" data-blog-filter="deals" aria-pressed="false">Deals</button>
+            <button type="button" class="nc-chip" data-blog-filter="guides" aria-pressed="false">Guides</button>
+            <button type="button" class="nc-chip" data-blog-filter="city-picks" aria-pressed="false">City picks</button>
+          </nav>
+          <p class="blog-count" data-blog-count aria-live="polite"></p>
+        </div>
+        <div class="blog-featured" data-blog-featured></div>
+        <div class="blog-grid" data-blog-grid>
+          <p class="blog-empty">Loading posts…</p>
+        </div>
+        <p class="how-note">Prices in posts are snapshots from when we wrote them. Every “see rates” button opens the hotel’s nitecrawler.com listing with your own dates, so you always see today’s number. Our editor’s picks that nitecrawler doesn’t list yet open Booking.com instead.</p>
+      </div>
+    </section>
+
+    <section class="section blog-search" id="search-band">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>Looking for a hotel somewhere in particular?</h2>
+            <p>Search any city. Rates in PHP or USD, checkout on Booking.com.</p>
+          </div>
+        </div>
+        <div class="nc-search-wrap">
+          <form class="search nc-band-search" id="search" action="#" method="get">
+            <div class="search-field search-where">
+              <label for="city">Where to? Search a city, area, or hotel name.</label>
+              <input id="city" name="city" type="text" placeholder="Where to?" value="" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" aria-autocomplete="list" aria-controls="typeahead" aria-expanded="false" />
+              <button type="submit" class="nc-band-go" aria-label="Find My Hotel"></button>
+              <div id="typeahead" class="typeahead" hidden role="listbox" aria-label="Suggestions"></div>
+            </div>
+            <div class="search-field search-dates">
+              <label for="dates">Check-in – Checkout</label>
+              <input id="checkin" name="checkin" type="hidden" value="" />
+              <input id="checkout" name="checkout" type="hidden" value="" />
+              <button type="button" id="dates" class="date-trigger" aria-haspopup="dialog" aria-controls="cal-root">Select dates</button>
+            </div>
+            <div class="search-field search-guests">
+              <label for="guests-trigger">Guests</label>
+              <input id="guests" name="guests" type="hidden" value="2" />
+              <input id="children" name="children" type="hidden" value="0" />
+              <input id="childages" name="childages" type="hidden" value="" />
+              <button type="button" id="guests-trigger" class="guest-trigger" aria-haspopup="dialog" aria-controls="guest-root">2 Guests</button>
+            </div>
+          </form>
+          <div id="guest-root" class="guest-root" hidden>
+            <div class="guest-backdrop" data-guest-close></div>
+            <div class="guest-panel" role="dialog" aria-modal="true" aria-label="Guests">
+              <div class="guest-handle" aria-hidden="true"></div>
+              <div class="guest-rows">
+                <div class="guest-row">
+                  <p class="guest-row-title">Adults:</p>
+                  <div class="guest-step">
+                    <button type="button" data-guest-minus="adults" aria-label="Fewer adults">−</button>
+                    <span data-guest-count="adults">2</span>
+                    <button type="button" data-guest-plus="adults" aria-label="More adults">+</button>
+                  </div>
+                </div>
+                <div class="guest-row">
+                  <p class="guest-row-title">Children:</p>
+                  <div class="guest-step">
+                    <button type="button" data-guest-minus="children" aria-label="Fewer children">−</button>
+                    <span data-guest-count="children">0</span>
+                    <button type="button" data-guest-plus="children" aria-label="More children">+</button>
+                  </div>
+                </div>
+              </div>
+              <p class="guest-price-copy" data-guest-price-copy hidden>Get the best price for your needs</p>
+              <div class="guest-ages" data-guest-ages hidden></div>
+              <button type="button" class="guest-done" data-guest-done>Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nc-cta">
+      <div class="wrap nc-cta-inner">
+        <img class="nc-cta-mascot" src="/brand/agila-simple.png" alt="" loading="lazy" />
+        <div class="nc-cta-copy">
+          <h2>Found the city? Now find the room.</h2>
+          <p>Search any destination, compare rates in your currency, and finish on Booking.com.</p>
+        </div>
+        <a class="btn btn-red" href="/#search">Find My Hotel</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer nc-foot">
+    <div class="wrap nc-foot-grid">
+      <div class="nc-foot-brand">
+        <a class="nc-logo" href="/" aria-label="Kwarto home"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
+        <div class="nc-foot-help">
+          <p class="nc-foot-h">Need help?</p>
+          <p>Email us to book or get support.</p>
+          <a href="mailto:hello@staytuloy.com">hello@staytuloy.com</a>
+        </div>
+      </div>
+      <div class="nc-foot-end">
+        <p class="nc-foot-tag">Made for travelers who book the trip, then the room.</p>
+        <div class="nc-foot-links">
+          <a href="/#search">Search</a>
+          <a href="/#destinations">Destinations</a>
+          <a href="/blog">Blog</a>
+          <a href="/#faq">FAQs</a>
+          <a class="btn btn-sm btn-outline" href="mailto:hello@staytuloy.com?subject=Kwarto%20feedback">Leave Feedback</a>
+        </div>
+        <div class="nc-foot-legal">
+          <p>© 2026 Kwarto, all rights reserved.</p>
+          <span class="tiny">Post prices are snapshots, not live rates.</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="/cal.js?v=hotels11"></script><script src="/guests.js?v=hotels11"></script><script src="/app.js?v=hotels11"></script>
+  <script src="/blog-posts.js?v=hotels11"></script><script src="/blog.js?v=hotels11"></script>
+</body>
+</html>

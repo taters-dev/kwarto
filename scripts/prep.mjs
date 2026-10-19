@@ -3,15 +3,17 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels15";
-const need = ["index.html", "cebu.html", "hotel.html", "results.html", "cal.js", "guests.js", "app.js", "styles.css"];
+const cacheBust = "hotels18";
+const need = ["index.html", "cebu.html", "hotel.html", "results.html", "blog.html", "blog-post.html", "cal.js", "guests.js", "app.js", "blog.js", "blog-posts.js", "styles.css"];
 
 function applyCacheBust(html) {
   return html
     .replace(/\/?styles\.css\?v=[^"'\s>]+/g, `/styles.css?v=${cacheBust}`)
     .replace(/\/?cal\.js\?v=[^"'\s>]+/g, `/cal.js?v=${cacheBust}`)
     .replace(/\/?guests\.js\?v=[^"'\s>]+/g, `/guests.js?v=${cacheBust}`)
-    .replace(/\/?app\.js\?v=[^"'\s>]+/g, `/app.js?v=${cacheBust}`);
+    .replace(/\/?app\.js\?v=[^"'\s>]+/g, `/app.js?v=${cacheBust}`)
+    .replace(/\/?blog\.js\?v=[^"'\s>]+/g, `/blog.js?v=${cacheBust}`)
+    .replace(/\/?blog-posts\.js\?v=[^"'\s>]+/g, `/blog-posts.js?v=${cacheBust}`);
 }
 
 for (const name of need) {
@@ -57,12 +59,16 @@ if (hotel.includes("Agoda") || hotel.includes("agoda.com") || !hotel.includes("C
   console.error("prep abort: hotel.html must continue on Booking.com, not Agoda");
   process.exit(1);
 }
-if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
-  console.error("prep abort: cache-bust or need 22 city dest-cards");
+if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 29) {
+  console.error("prep abort: cache-bust or need 29 city dest-cards (22 Philippine + 7 international)");
   process.exit(1);
 }
 if (!index.includes("Hotels in Cebu") || !index.includes("Hotels in Boracay") || !index.includes("Hotels in Siargao") || !index.includes("Hotels in Legazpi")) {
   console.error("prep abort: city dest-cards missing");
+  process.exit(1);
+}
+if (!index.includes("Hotels in Tokyo") || !index.includes("Hotels in Bangkok") || !index.includes("Hotels in Singapore") || !index.includes("Hotels in Seoul")) {
+  console.error("prep abort: international dest-cards missing — the rail must mix PH and world cities");
   process.exit(1);
 }
 if (index.includes("hotel-pill") || index.includes("hotel-pills") || index.includes("Shangri-La Mactan")) {
@@ -82,8 +88,8 @@ if (index.includes("data-usd") || /<p class="from">/.test(index) || index.includ
   process.exit(1);
 }
 const destHrefs = [...index.matchAll(/<a class="dest-card"[^>]*href="([^"]+)"/g)].map((m) => m[1]);
-if (destHrefs.length !== 22) {
-  console.error("prep abort: need 22 dest-cards");
+if (destHrefs.length !== 29) {
+  console.error("prep abort: need 29 dest-cards");
   process.exit(1);
 }
 if (destHrefs.some((h) => h === "#" || h.includes("agoda.com") || h.includes("klook.com") || h.includes("tp.media"))) {
@@ -100,6 +106,25 @@ if (!destHrefs.some((h) => /\/cebu(?:\?|$)/i.test(h) || /cebu\.html/i.test(h))) 
 }
 if (!destHrefs.some((h) => /\/manila(?:\?|$)/i.test(h)) || !destHrefs.some((h) => /\/boracay(?:\?|$)/i.test(h))) {
   console.error("prep abort: Manila and Boracay cards must go to city pages");
+  process.exit(1);
+}
+if (!destHrefs.some((h) => /\/tokyo(?:\?|$)/i.test(h)) || !destHrefs.some((h) => /\/bangkok(?:\?|$)/i.test(h))) {
+  console.error("prep abort: Tokyo and Bangkok cards must go to city pages");
+  process.exit(1);
+}
+// Versatile copy: PH heritage stays (Cebu is home court) but the site must read as a general hotel search.
+for (const [name, html] of [["index.html", index], ["cebu.html", cebu], ["results.html", results], ["hotel.html", hotel]]) {
+  if (html.includes("Made for Filipinos") || html.includes("Hotels for Filipinos") || html.includes("Philippine destinations") || html.includes("PHP first") || html.includes("prices in pesos")) {
+    console.error("prep abort: Philippines-only framing still in copy on", name);
+    process.exit(1);
+  }
+  if (!html.includes("Made for travelers who book the trip, then the room.") || !html.includes('href="/#destinations"')) {
+    console.error("prep abort: footer tagline or Destinations nav link missing on", name);
+    process.exit(1);
+  }
+}
+if (!index.includes("Prices in your currency") || !index.includes("Any city Booking.com covers") || !index.includes("Then the world")) {
+  console.error("prep abort: homepage versatile copy missing (currency step, FAQ cities, rail subline)");
   process.exit(1);
 }
 if (index.includes("v=hotels2") || index.includes("v=hotels3") || index.includes("v=hotels4") || index.includes("v=hotels8") || index.includes("v=hotels9")) {
@@ -373,6 +398,102 @@ if (!nextConfig.includes('source: "/:city"') || !nextConfig.includes('destinatio
 }
 if (!mid.includes("/results.html") || !mid.includes("RESERVED")) {
   console.error("prep abort: middleware must rewrite city slugs to the city template");
+  process.exit(1);
+}
+// Blog: /blog listing, /blog/<slug> article template, post data, nav links, homepage row.
+const blog = readFileSync(join("public", "blog.html"), "utf8");
+const blogPost = readFileSync(join("public", "blog-post.html"), "utf8");
+const blogJs = readFileSync(join("public", "blog.js"), "utf8");
+const blogPosts = readFileSync(join("public", "blog-posts.js"), "utf8");
+if (!blog.includes("data-blog-grid") || !blog.includes("data-blog-featured") || !blog.includes('data-blog-filter="deals"') || !blog.includes('class="nc-top"') || !blog.includes('class="site-footer nc-foot"')) {
+  console.error("prep abort: blog.html must be the Kwarto blog listing with the shared header/footer");
+  process.exit(1);
+}
+if (!blogPost.includes("data-post-root") || !blogPost.includes("data-post-body") || !blogPost.includes("data-book-primary") || !blogPost.includes("data-post-related") || !blogPost.includes("data-post-missing")) {
+  console.error("prep abort: blog-post.html must render an article, Where-to-book box, related posts, and a not-found state");
+  process.exit(1);
+}
+const postCats = [...blogPosts.matchAll(/category:\s*"([^"]+)"/g)].map((m) => m[1]);
+if (!postCats.length || postCats.some((c) => !["Deals", "Guides", "City picks"].includes(c)) || /category:\s*"(Flights|Cruises|Packages|Vacations)"/i.test(blogPosts) || /\bcruise\b/i.test(blogPosts)) {
+  console.error("prep abort: blog is hotels only — categories are Deals, Guides, City picks; no flights, cruises, or packages");
+  process.exit(1);
+}
+const postSlugs = [...blogPosts.matchAll(/slug:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
+if (postSlugs.length < 6 || new Set(postSlugs).size !== postSlugs.length) {
+  console.error("prep abort: need at least 6 blog posts with unique slugs, got", postSlugs.length);
+  process.exit(1);
+}
+const postCountries = new Set([...blogPosts.matchAll(/country:\s*"([^"]+)"/g)].map((m) => m[1]));
+if (postCountries.size < 2 || !postCountries.has("United States") || !postCountries.has("Philippines")) {
+  console.error("prep abort: blog posts must cover nitecrawler's US hotels and keep one Philippine editor's pick");
+  process.exit(1);
+}
+// Posts are sourced from nitecrawler.com: every sourceUrl points there, the editor's pick is flagged, and the article shows the attribution line.
+const sourceUrls = [...blogPosts.matchAll(/sourceUrl:\s*"([^"]+)"/g)].map((m) => m[1]);
+if (sourceUrls.length < 6 || sourceUrls.some((u) => !/^https:\/\/www\.nitecrawler\.com\/destinations\//.test(u)) || new Set(sourceUrls).size !== sourceUrls.length) {
+  console.error("prep abort: need at least 6 posts with unique nitecrawler.com sourceUrls, got", sourceUrls.length);
+  process.exit(1);
+}
+if ((blogPosts.match(/editorsPick:\s*true/g) || []).length !== 1 || !blogPosts.includes('country: "Philippines"')) {
+  console.error("prep abort: exactly one post is the Philippine editor's pick");
+  process.exit(1);
+}
+if (!blogJs.includes("Spotted on") || !blogJs.includes("sourceUrl") || !blogPost.includes("data-post-source") || !cssOut.includes(".blog-source")) {
+  console.error("prep abort: articles must show the Spotted on nitecrawler.com attribution");
+  process.exit(1);
+}
+// Blog CTAs: posts spotted on nitecrawler link to their nitecrawler listing (sourceUrl) with the stay appended
+// as arrival/departure/adults/kids; the Philippine editor's pick (no nitecrawler listing) keeps Booking.com via bookingUrl().
+if (!blogJs.includes("function nitecrawlerHref") || !blogJs.includes("data-book-source") || !blogJs.includes('"arrival"') || !blogJs.includes('"departure"') || !blogJs.includes("See rates on nitecrawler")) {
+  console.error("prep abort: blog CTAs for nitecrawler-sourced posts must open the nitecrawler listing with the reader's dates");
+  process.exit(1);
+}
+if (!blogJs.includes("window.Kwarto") || !blogJs.includes("bookingUrl") || !blogJs.includes("data-book-hotel") || !appjs.includes("window.Kwarto = Object.assign")) {
+  console.error("prep abort: the editor's-pick blog CTA must still deep-link through app.js bookingUrl()");
+  process.exit(1);
+}
+// Sourced posts must not label their CTAs "Booking.com"; only the editor's pick may.
+const postBlocks = blogPosts.split(/\n  \{\n    slug:/).slice(1);
+for (const block of postBlocks) {
+  const slug = (block.match(/^\s*"([a-z0-9-]+)"/) || [])[1];
+  const sourced = /sourceUrl:\s*"https:\/\/www\.nitecrawler\.com/.test(block);
+  const pick = /editorsPick:\s*true/.test(block);
+  const ctaLabels = [...block.matchAll(/type:\s*"cta",\s*label:\s*"([^"]+)"/g)].map((m) => m[1]);
+  if (sourced && ctaLabels.some((l) => /booking\.com/i.test(l))) {
+    console.error("prep abort: nitecrawler-sourced post must not send readers to Booking.com:", slug);
+    process.exit(1);
+  }
+  if (pick && !ctaLabels.some((l) => /booking\.com/i.test(l))) {
+    console.error("prep abort: editor's pick must keep a Booking.com CTA:", slug);
+    process.exit(1);
+  }
+}
+if (!blogPost.includes('name="checkin"') || !blogPost.includes('id="guests-trigger"') || !blogPost.includes("data-book-primary") || !blogPost.includes("data-book-partner") || blogPost.includes("Check rates on Booking.com")) {
+  console.error("prep abort: blog Where-to-book box must carry stay dates and guests into the CTA and name the partner");
+  process.exit(1);
+}
+for (const [name, html] of [["index.html", index], ["cebu.html", cebu], ["results.html", results], ["hotel.html", hotel], ["blog.html", blog], ["blog-post.html", blogPost]]) {
+  if ((html.match(/href="\/blog"/g) || []).length < 2) {
+    console.error("prep abort: header and footer must link to /blog on", name);
+    process.exit(1);
+  }
+}
+if (!index.includes("Latest from the blog") || !index.includes("data-blog-latest") || !index.includes('src="/blog.js?v=') || !index.includes('src="/blog-posts.js?v=')) {
+  console.error("prep abort: homepage must show a Latest from the blog row");
+  process.exit(1);
+}
+for (const [name, html] of [["blog.html", blog], ["blog-post.html", blogPost], ["index.html", index]]) {
+  if (!html.includes(`src="/blog.js?v=${cacheBust}"`) || !html.includes(`src="/blog-posts.js?v=${cacheBust}"`)) {
+    console.error("prep abort: blog scripts missing or stale cache-bust on", name);
+    process.exit(1);
+  }
+}
+if (!cssOut.includes(".blog-card") || !cssOut.includes(".blog-grid") || !cssOut.includes(".blog-deal") || !cssOut.includes(".blog-book") || !/\.blog-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3/s.test(cssOut)) {
+  console.error("prep abort: blog CSS missing");
+  process.exit(1);
+}
+if (!mid.includes('"/blog.html"') || !mid.includes('"/blog-post.html"') || !nextConfig.includes('source: "/blog/:slug"')) {
+  console.error("prep abort: /blog and /blog/<slug> must be routed to the blog templates");
   process.exit(1);
 }
 console.log("prep ok", "cacheBust", cacheBust);

@@ -1,6 +1,6 @@
 # Kwarto
 
-A hotel booking site for Filipinos. Search hotels in the Philippines, see prices in PHP or USD, and book through Booking.com.
+A hotel search site with Philippine roots. Search hotels in any city Booking.com covers — Cebu, Tokyo, Bangkok, Lisbon — see prices in PHP or USD, and book through Booking.com. Includes a hotel-only blog of deals, guides, and city picks at `/blog`.
 
 ## Getting Started
 

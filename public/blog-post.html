@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kwarto Blog</title>
+  <meta name="description" content="Hotel deals, guides, and city picks from Kwarto." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&family=Red+Hat+Display:ital,wght@0,700;0,800;1,700;1,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css?v=hotels18" />
+</head>
+<body class="nc" data-blog-post-page>
+  <a class="skip" href="#main">Skip to content</a>
+  <a class="nc-mobile-bar" href="mailto:hello@staytuloy.com">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+    Need help? hello@staytuloy.com
+  </a>
+  <header class="nc-top">
+    <div class="wrap nc-top-inner">
+      <a class="nc-logo" href="/" aria-label="Kwarto home">
+        <img class="nc-logo-img" src="/brand/kwarto-wordmark.png" alt="Kwarto" />
+      </a>
+      <nav class="nc-top-links" aria-label="Site">
+        <a class="nc-top-help" href="mailto:hello@staytuloy.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          hello@staytuloy.com
+        </a>
+        <a href="/#search">Search</a>
+        <a href="/#destinations">Destinations</a>
+        <a href="/blog">Blog</a>
+        <div class="nc-fx" role="group" aria-label="Currency">
+          <button type="button" data-cur="PHP" class="is-on">PHP</button>
+          <button type="button" data-cur="USD">USD</button>
+        </div>
+        <a class="nc-member" href="/#search">Find My Hotel</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap blog-post-top" data-post-root>
+      <p class="crumb"><a href="/">Home</a> · <a href="/blog">Blog</a> · <a href="/blog" data-post-cat-link>Posts</a></p>
+
+      <div class="blog-post-hero">
+        <img data-post-hero src="" alt="" decoding="async" fetchpriority="high" />
+        <span class="blog-chip" data-post-cat></span>
+      </div>
+
+      <div class="split blog-split">
+        <article class="blog-article">
+          <header class="blog-post-head">
+            <h1 data-post-title>Loading…</h1>
+            <p class="blog-post-dek" data-post-dek></p>
+            <div class="blog-meta">
+              <span class="blog-meta-loc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.5-7-11.5a7 7 0 0 1 14 0C19 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-post-location></span></span>
+              <time data-post-date datetime=""></time>
+              <span data-post-author></span>
+              <span data-post-read></span>
+            </div>
+            <p class="blog-source" data-post-source hidden></p>
+          </header>
+          <div class="prose blog-body" data-post-body></div>
+          <p class="cancel">Prices quoted are indicative snapshots from the date of publication and change daily. Kwarto doesn’t take payment — every “see rates” link hands you to the site that lists the hotel (nitecrawler.com for the hotels we spotted there, Booking.com for our editor’s picks) with your dates carried over.</p>
+        </article>
+
+        <aside class="book blog-book" aria-label="Where to book">
+          <p class="blog-book-kicker">Where to book</p>
+          <h2 class="blog-book-title" data-book-title></h2>
+          <p class="blog-book-place" data-book-place></p>
+          <p class="blog-book-price" data-book-price hidden></p>
+          <div class="nc-search-wrap">
+            <form class="search blog-stay" id="search" action="#" method="get" aria-label="Your stay">
+              <div class="search-field search-dates">
+                <label for="dates">Dates</label>
+                <input id="checkin" name="checkin" type="hidden" value="" />
+                <input id="checkout" name="checkout" type="hidden" value="" />
+                <button type="button" id="dates" class="date-trigger" aria-haspopup="dialog" aria-controls="cal-root">Select dates</button>
+              </div>
+              <div class="search-field search-guests">
+                <label for="guests-trigger">Guests</label>
+                <input id="guests" name="guests" type="hidden" value="2" />
+                <input id="children" name="children" type="hidden" value="0" />
+                <input id="childages" name="childages" type="hidden" value="" />
+                <button type="button" id="guests-trigger" class="guest-trigger" aria-haspopup="dialog" aria-controls="guest-root">2 Guests</button>
+              </div>
+            </form>
+            <div id="guest-root" class="guest-root" hidden>
+              <div class="guest-backdrop" data-guest-close></div>
+              <div class="guest-panel" role="dialog" aria-modal="true" aria-label="Guests">
+                <div class="guest-handle" aria-hidden="true"></div>
+                <div class="guest-rows">
+                  <div class="guest-row">
+                    <p class="guest-row-title">Adults:</p>
+                    <div class="guest-step">
+                      <button type="button" data-guest-minus="adults" aria-label="Fewer adults">−</button>
+                      <span data-guest-count="adults">2</span>
+                      <button type="button" data-guest-plus="adults" aria-label="More adults">+</button>
+                    </div>
+                  </div>
+                  <div class="guest-row">
+                    <p class="guest-row-title">Children:</p>
+                    <div class="guest-step">
+                      <button type="button" data-guest-minus="children" aria-label="Fewer children">−</button>
+                      <span data-guest-count="children">0</span>
+                      <button type="button" data-guest-plus="children" aria-label="More children">+</button>
+                    </div>
+                  </div>
+                </div>
+                <p class="guest-price-copy" data-guest-price-copy hidden>Get the best price for your needs</p>
+                <div class="guest-ages" data-guest-ages hidden></div>
+                <button type="button" class="guest-done" data-guest-done>Done</button>
+              </div>
+            </div>
+          </div>
+          <div class="handoff">
+            <p class="handoff-who"><b data-book-partner>nitecrawler.com</b> · <span data-book-stay></span></p>
+            <p data-book-partner-note>You leave Kwarto. We don’t take the card.</p>
+          </div>
+          <a class="cta" href="#" target="_blank" rel="noopener" data-book-primary>See rates on nitecrawler</a>
+          <a class="blog-book-city" href="/" data-book-city-link>All hotels on Kwarto</a>
+        </aside>
+      </div>
+    </div>
+
+    <div class="wrap blog-post-top" data-post-missing hidden>
+      <p class="crumb"><a href="/">Home</a> · <a href="/blog">Blog</a></p>
+      <header class="page-head">
+        <h1>We couldn’t find that post</h1>
+        <p class="sub">It may have moved. Here’s what’s new instead.</p>
+      </header>
+      <div class="blog-grid" data-blog-missing-grid></div>
+      <p class="how-note"><a class="btn btn-sm btn-outline" href="/blog">Back to the blog</a></p>
+    </div>
+
+    <section class="section blog-related" aria-labelledby="related-h">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2 id="related-h">Related posts</h2>
+            <p>More hotels worth the detour.</p>
+          </div>
+          <a class="btn btn-sm btn-outline" href="/blog">All posts</a>
+        </div>
+        <div class="blog-grid" data-post-related></div>
+      </div>
+    </section>
+
+    <section class="nc-cta">
+      <div class="wrap nc-cta-inner">
+        <img class="nc-cta-mascot" src="/brand/agila-simple.png" alt="" loading="lazy" />
+        <div class="nc-cta-copy">
+          <h2>Found the city? Now find the room.</h2>
+          <p>Search any destination, compare rates in your currency, and finish on Booking.com.</p>
+        </div>
+        <a class="btn btn-red" href="/#search">Find My Hotel</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer nc-foot">
+    <div class="wrap nc-foot-grid">
+      <div class="nc-foot-brand">
+        <a class="nc-logo" href="/" aria-label="Kwarto home"><img class="nc-logo-img nc-logo-img-ink" src="/brand/kwarto-wordmark.png" alt="Kwarto" /></a>
+        <div class="nc-foot-help">
+          <p class="nc-foot-h">Need help?</p>
+          <p>Email us to book or get support.</p>
+          <a href="mailto:hello@staytuloy.com">hello@staytuloy.com</a>
+        </div>
+      </div>
+      <div class="nc-foot-end">
+        <p class="nc-foot-tag">Made for travelers who book the trip, then the room.</p>
+        <div class="nc-foot-links">
+          <a href="/#search">Search</a>
+          <a href="/#destinations">Destinations</a>
+          <a href="/blog">Blog</a>
+          <a href="/#faq">FAQs</a>
+          <a class="btn btn-sm btn-outline" href="mailto:hello@staytuloy.com?subject=Kwarto%20feedback">Leave Feedback</a>
+        </div>
+        <div class="nc-foot-legal">
+          <p>© 2026 Kwarto, all rights reserved.</p>
+          <span class="tiny">Post prices are snapshots, not live rates.</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script>
+  (function () {
+    var p = new URLSearchParams(location.search);
+    ["checkin", "checkout", "guests", "children", "childages"].forEach(function (id) {
+      var el = document.getElementById(id);
+      var v = p.get(id);
+      if (el && v) el.value = v;
+    });
+  })();
+  </script>
+  <script src="/cal.js?v=hotels18"></script><script src="/guests.js?v=hotels18"></script><script src="/app.js?v=hotels18"></script>
+  <script src="/blog-posts.js?v=hotels18"></script><script src="/blog.js?v=hotels18"></script>
+</body>
+</html>
