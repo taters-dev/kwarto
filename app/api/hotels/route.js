@@ -94,8 +94,9 @@ async function searchHotels(destId, destType, checkIn, checkOut, options = {}) {
 
 export async function GET(request) {
   const params = new URL(request.url).searchParams;
-  const checkIn = params.get("checkIn") || formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-  const checkOut = params.get("checkOut") || formatDate(new Date(Date.now() + 10 * 24 * 60 * 60 * 1000));
+  // Default stay is tonight (check in today, check out tomorrow), matching the client.
+  const checkIn = params.get("checkIn") || formatDate(new Date());
+  const checkOut = params.get("checkOut") || formatDate(new Date(Date.now() + 24 * 60 * 60 * 1000));
   const currency = (params.get("currency") || "USD").toUpperCase();
   const page = parseInt(params.get("page") || "0", 10);
   const city = params.get("city") || "Cebu";

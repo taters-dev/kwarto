@@ -37,12 +37,6 @@
   var monthEl = root.querySelector("[data-cal-month]");
   var monthNextEl = root.querySelector("[data-cal-month-next]");
   var summaryEl = root.querySelector("[data-cal-summary]");
-  var view = parseYmd(inEl.value || "2026-09-12");
-  view.setDate(1);
-  var start = inEl.value || "2026-09-12";
-  var end = outEl.value || "2026-09-15";
-  var picking = "in";
-
   function pad(n) { return n < 10 ? "0" + n : String(n); }
   function ymd(d) {
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
@@ -51,6 +45,16 @@
     var p = (s || "").split("-");
     return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
   }
+  function isYmd(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || ""); }
+
+  // Default stay: check in today, check out tomorrow. Dates carried in from
+  // the URL are kept unless they are malformed or already in the past.
+  var today = todayYmd();
+  var start = isYmd(inEl.value) && inEl.value >= today ? inEl.value : today;
+  var end = isYmd(outEl.value) && outEl.value > start ? outEl.value : addDay(start);
+  var view = parseYmd(start);
+  view.setDate(1);
+  var picking = "in";
   function pretty(s) {
     if (!s) return "";
     return parseYmd(s).toLocaleDateString("en-US", { month: "short", day: "numeric" });
