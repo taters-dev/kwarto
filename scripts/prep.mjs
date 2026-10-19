@@ -59,12 +59,16 @@ if (hotel.includes("Agoda") || hotel.includes("agoda.com") || !hotel.includes("C
   console.error("prep abort: hotel.html must continue on Booking.com, not Agoda");
   process.exit(1);
 }
-if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 22) {
-  console.error("prep abort: cache-bust or need 22 city dest-cards");
+if (!index.includes(`href="/styles.css?v=${cacheBust}"`) || (index.match(/class="dest-card"/g) || []).length !== 29) {
+  console.error("prep abort: cache-bust or need 29 city dest-cards (22 Philippine + 7 international)");
   process.exit(1);
 }
 if (!index.includes("Hotels in Cebu") || !index.includes("Hotels in Boracay") || !index.includes("Hotels in Siargao") || !index.includes("Hotels in Legazpi")) {
   console.error("prep abort: city dest-cards missing");
+  process.exit(1);
+}
+if (!index.includes("Hotels in Tokyo") || !index.includes("Hotels in Bangkok") || !index.includes("Hotels in Singapore") || !index.includes("Hotels in Seoul")) {
+  console.error("prep abort: international dest-cards missing — the rail must mix PH and world cities");
   process.exit(1);
 }
 if (index.includes("hotel-pill") || index.includes("hotel-pills") || index.includes("Shangri-La Mactan")) {
@@ -84,8 +88,8 @@ if (index.includes("data-usd") || /<p class="from">/.test(index) || index.includ
   process.exit(1);
 }
 const destHrefs = [...index.matchAll(/<a class="dest-card"[^>]*href="([^"]+)"/g)].map((m) => m[1]);
-if (destHrefs.length !== 22) {
-  console.error("prep abort: need 22 dest-cards");
+if (destHrefs.length !== 29) {
+  console.error("prep abort: need 29 dest-cards");
   process.exit(1);
 }
 if (destHrefs.some((h) => h === "#" || h.includes("agoda.com") || h.includes("klook.com") || h.includes("tp.media"))) {
@@ -102,6 +106,25 @@ if (!destHrefs.some((h) => /\/cebu(?:\?|$)/i.test(h) || /cebu\.html/i.test(h))) 
 }
 if (!destHrefs.some((h) => /\/manila(?:\?|$)/i.test(h)) || !destHrefs.some((h) => /\/boracay(?:\?|$)/i.test(h))) {
   console.error("prep abort: Manila and Boracay cards must go to city pages");
+  process.exit(1);
+}
+if (!destHrefs.some((h) => /\/tokyo(?:\?|$)/i.test(h)) || !destHrefs.some((h) => /\/bangkok(?:\?|$)/i.test(h))) {
+  console.error("prep abort: Tokyo and Bangkok cards must go to city pages");
+  process.exit(1);
+}
+// Versatile copy: PH heritage stays (Cebu is home court) but the site must read as a general hotel search.
+for (const [name, html] of [["index.html", index], ["cebu.html", cebu], ["results.html", results], ["hotel.html", hotel]]) {
+  if (html.includes("Made for Filipinos") || html.includes("Hotels for Filipinos") || html.includes("Philippine destinations") || html.includes("PHP first") || html.includes("prices in pesos")) {
+    console.error("prep abort: Philippines-only framing still in copy on", name);
+    process.exit(1);
+  }
+  if (!html.includes("Made for travelers who book the trip, then the room.") || !html.includes('href="/#destinations"')) {
+    console.error("prep abort: footer tagline or Destinations nav link missing on", name);
+    process.exit(1);
+  }
+}
+if (!index.includes("Prices in your currency") || !index.includes("Any city Booking.com covers") || !index.includes("Then the world")) {
+  console.error("prep abort: homepage versatile copy missing (currency step, FAQ cities, rail subline)");
   process.exit(1);
 }
 if (index.includes("v=hotels2") || index.includes("v=hotels3") || index.includes("v=hotels4") || index.includes("v=hotels8") || index.includes("v=hotels9")) {

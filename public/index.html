@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kwarto | Hotels for Filipinos</title>
-  <meta name="description" content="No hotel yet? No problem. Cebu, Bangkok, Tokyo, Singapore. Stress-free booking. PHP or USD." />
+  <title>Kwarto | Find your hotel, anywhere</title>
+  <meta name="description" content="No hotel yet? No problem. Search hotels in Cebu, Tokyo, Bangkok, Lisbon and any city Booking.com covers. Prices in your currency. Stress-free booking." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&family=Red+Hat+Display:ital,wght@0,700;0,800;1,700;1,800&display=swap" rel="stylesheet" />
@@ -27,7 +27,7 @@
           hello@staytuloy.com
         </a>
         <a href="#search">Search</a>
-        <a href="/cebu">Cebu Hotels</a>
+        <a href="/#destinations">Destinations</a>
         <a href="/blog">Blog</a>
         <div class="nc-fx" role="group" aria-label="Currency">
           <button type="button" data-cur="PHP" class="is-on">PHP</button>
@@ -56,7 +56,7 @@
             <form class="search nc-hero-search" id="search" action="#" method="get">
               <div class="search-field search-where">
                 <label for="city">Where to</label>
-                <input id="city" name="city" type="text" placeholder="Try: Cebu, Boracay, or a hotel name" value="" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" aria-autocomplete="list" aria-controls="typeahead" aria-expanded="false" />
+                <input id="city" name="city" type="text" placeholder="Try: Tokyo, Cebu, or a hotel name" value="" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" aria-autocomplete="list" aria-controls="typeahead" aria-expanded="false" />
                 <div id="typeahead" class="typeahead" hidden role="listbox" aria-label="Suggestions"></div>
               </div>
               <div class="search-field search-dates">
@@ -114,7 +114,7 @@
           <div class="section-head">
             <div>
               <h2>Don't Skip These Trips</h2>
-              <p>Cebu first. Then the islands. Scroll.</p>
+              <p>Cebu first. Then the world. Scroll.</p>
             </div>
             <div class="nc-rail-nav">
               <button type="button" data-rail-prev aria-label="Previous destinations"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
@@ -129,11 +129,25 @@
               <p class="why">Home court. Airport, city, beach.</p>
             </div>
           </a>
+          <a class="dest-card" href="/tokyo" data-city="Tokyo">
+            <img src="https://images.unsplash.com/photo-1513407030348-c983a97b98d8?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Tokyo Tower over the city skyline" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Tokyo</h3>
+              <p class="why">Shinjuku. Then the first train.</p>
+            </div>
+          </a>
           <a class="dest-card" href="/boracay" data-city="Boracay">
             <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Boracay white sand beach" loading="lazy" />
             <div class="meta">
               <h3>Hotels in Boracay</h3>
               <p class="why">White sand. One boat.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="/bangkok" data-city="Bangkok">
+            <img src="https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Grand Palace in Bangkok" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Bangkok</h3>
+              <p class="why">River or Sukhumvit. Your call.</p>
             </div>
           </a>
           <a class="dest-card" href="/siargao" data-city="Siargao">
@@ -143,11 +157,25 @@
               <p class="why">Cloud 9. Then sleep.</p>
             </div>
           </a>
+          <a class="dest-card" href="/singapore" data-city="Singapore">
+            <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Marina Bay Sands in Singapore" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Singapore</h3>
+              <p class="why">Hawker first. Then the pool.</p>
+            </div>
+          </a>
           <a class="dest-card" href="/bohol" data-city="Bohol">
             <img src="https://images.unsplash.com/photo-1667823506151-836beb11723d?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Chocolate Hills in Bohol" loading="lazy" />
             <div class="meta">
               <h3>Hotels in Bohol</h3>
               <p class="why">Hills. Then a quiet room.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="/seoul" data-city="Seoul">
+            <img src="https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Shop signs on a Seoul street at dusk" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Seoul</h3>
+              <p class="why">Myeongdong. Then a late bowl.</p>
             </div>
           </a>
           <a class="dest-card" href="/palawan" data-city="Palawan">
@@ -157,6 +185,13 @@
               <p class="why">The long one. One card.</p>
             </div>
           </a>
+          <a class="dest-card" href="/hong-kong" data-city="Hong Kong">
+            <img src="https://images.unsplash.com/photo-1536599018102-9f803c140fc1?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Hong Kong harbour skyline at night" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Hong Kong</h3>
+              <p class="why">Harbour view. One MTR stop.</p>
+            </div>
+          </a>
           <a class="dest-card" href="/coron" data-city="Coron">
             <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Coron limestone and water" loading="lazy" />
             <div class="meta">
@@ -164,11 +199,25 @@
               <p class="why">Wrecks. Lakes. Then sleep.</p>
             </div>
           </a>
+          <a class="dest-card" href="/taipei" data-city="Taipei">
+            <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Taipei 101 at sunset" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Taipei</h3>
+              <p class="why">Night market. Then the room.</p>
+            </div>
+          </a>
           <a class="dest-card" href="/baguio" data-city="Baguio">
             <img src="https://images.unsplash.com/photo-1756731503024-a22ea6f8aba0?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Baguio in the pines" loading="lazy" />
             <div class="meta">
               <h3>Hotels in Baguio</h3>
               <p class="why">Jacket weather. Then a fire.</p>
+            </div>
+          </a>
+          <a class="dest-card" href="/dubai" data-city="Dubai">
+            <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&amp;fit=crop&amp;w=600&amp;q=70" alt="Dubai skyline at dawn" loading="lazy" />
+            <div class="meta">
+              <h3>Hotels in Dubai</h3>
+              <p class="why">Marina. Then the desert.</p>
             </div>
           </a>
           <a class="dest-card" href="/davao" data-city="Davao">
@@ -283,8 +332,8 @@
 
     <section class="nc-stats" aria-label="Kwarto at a glance">
       <div class="wrap nc-stats-grid">
-        <div><b class="c-red">22</b><span>Philippine destinations</span></div>
-        <div><b class="c-blue">2</b><span>currencies: PHP or USD</span></div>
+        <div><b class="c-red">29</b><span>destinations, Cebu to Dubai</span></div>
+        <div><b class="c-blue">2</b><span>currencies. PHP or USD, your pick</span></div>
         <div><b class="c-sun">1</b><span>checkout, on Booking.com</span></div>
       </div>
     </section>
@@ -297,32 +346,34 @@
         </div>
         <nav class="nc-chips" aria-label="Popular destinations">
           <a class="nc-chip is-on" href="/cebu"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.8l1.5 3.2 3.5.4-2.6 2.4.7 3.4L6 8.6 2.9 10.2l.7-3.4L1 4.4l3.5-.4z"/></svg>Cebu</a>
+          <a class="nc-chip" href="/tokyo">Tokyo</a>
           <a class="nc-chip" href="/boracay">Boracay</a>
+          <a class="nc-chip" href="/bangkok">Bangkok</a>
           <a class="nc-chip" href="/manila">Manila</a>
+          <a class="nc-chip" href="/singapore">Singapore</a>
           <a class="nc-chip" href="/siargao">Siargao</a>
+          <a class="nc-chip" href="/seoul">Seoul</a>
           <a class="nc-chip" href="/palawan">Palawan</a>
-          <a class="nc-chip" href="/bohol">Bohol</a>
-          <a class="nc-chip" href="/baguio">Baguio</a>
-          <a class="nc-chip" href="/davao">Davao</a>
+          <a class="nc-chip" href="/hong-kong">Hong Kong</a>
         </nav>
         <div class="steps">
           <div class="step">
             <span class="n">01</span>
             <h3>Search</h3>
-            <p>City, dates, guests. Same shape as every trip you’ve booked.</p>
+            <p>Any city, your dates, your guests. Same shape as every trip you’ve booked.</p>
           </div>
           <div class="step">
             <span class="n">02</span>
             <h3>Compare rates</h3>
-            <p>PHP first. Flip to USD if that’s how you think.</p>
+            <p>Prices in your currency. PHP or USD, one tap in the header.</p>
           </div>
           <div class="step">
             <span class="n">03</span>
             <h3>Book</h3>
-            <p>Pick the room. Continue through a partner. You land; you sleep.</p>
+            <p>Pick the room. Finish on Booking.com. You land; you sleep.</p>
           </div>
         </div>
-        <p class="how-note">Rates come from hotel partners. We surface them in PHP or USD. You pick.</p>
+        <p class="how-note">Rates come from Booking.com, filtered to what’s actually available for your dates. See them in PHP or USD, then finish there.</p>
       </div>
     </section>
 
@@ -345,26 +396,26 @@
         <div class="nc-faq-grid">
           <div class="nc-faq-block">
             <img class="nc-faq-mascot" src="/brand/agila-simple.png" alt="" loading="lazy" />
-            <h2>Made for Filipinos who book the trip, then the room</h2>
+            <h2>Made for travelers who book the trip, then the room</h2>
             <div class="nc-faq-sun" aria-hidden="true"></div>
             <p>Straight answers. No card details on Kwarto. Checkout on Booking.com.</p>
           </div>
           <div class="nc-faq-list">
             <details class="nc-faq" open>
               <summary>Is Kwarto a hotel?</summary>
-              <p>No. Kwarto finds you a room across 22 Philippine destinations, then hands you to Booking.com to finish. We never take your card.</p>
+              <p>No. Kwarto is a hotel search. Pick any city — Cebu, Tokyo, Lisbon, Mexico City — and we show rooms available for your dates, then hand you to Booking.com to finish. We never take your card.</p>
             </details>
             <details class="nc-faq">
-              <summary>Can I see prices in pesos?</summary>
-              <p>Yes. Prices show in PHP by default. Flip to USD with the toggle in the header. The final checkout currency is set by the partner.</p>
+              <summary>Which currencies can I see?</summary>
+              <p>PHP or USD — flip the toggle in the header and every price on the site follows. The final checkout currency is set by Booking.com.</p>
             </details>
             <details class="nc-faq">
               <summary>Where does the booking happen?</summary>
-              <p>On Booking.com, with your dates and guests carried over. Cancellation terms are the partner’s and show before you pay.</p>
+              <p>On Booking.com, with your dates and guests carried over. Cancellation terms are Booking.com’s and show before you pay.</p>
             </details>
             <details class="nc-faq">
-              <summary>Which cities are live?</summary>
-              <p>Cebu first. Boracay, Siargao, Bohol, Palawan and the rest of the rail above are city pages; hotel cards appear as soon as we have data for a city.</p>
+              <summary>Which cities can I search?</summary>
+              <p>Any city Booking.com covers. The rail above is a shortcut — Cebu is home court, and Tokyo, Bangkok, Singapore, Seoul and the islands are one tap away — but the search box takes any destination or hotel name in the world.</p>
             </details>
           </div>
         </div>
@@ -377,7 +428,7 @@
         <img class="nc-cta-mascot" src="/brand/agila-simple.png" alt="" loading="lazy" />
         <div class="nc-cta-copy">
           <h2>Still no hotel? We have a room for that.</h2>
-          <p>Work trip, long weekend, or a flight that lands at midnight—find your spot on Kwarto.</p>
+          <p>Work trip, long weekend, or a flight that lands at midnight in a city you’ve never been to—find your spot on Kwarto.</p>
         </div>
         <a class="btn btn-red" href="#search">Find My Hotel</a>
       </div>
@@ -395,17 +446,17 @@
         </div>
       </div>
       <div class="nc-foot-end">
-        <p class="nc-foot-tag">Made for Filipinos who book the trip, then the room.</p>
+        <p class="nc-foot-tag">Made for travelers who book the trip, then the room.</p>
         <div class="nc-foot-links">
           <a href="#search">Search</a>
-          <a href="/cebu">Cebu Hotels</a>
+          <a href="/#destinations">Destinations</a>
           <a href="/blog">Blog</a>
           <a href="#faq">FAQs</a>
           <a class="btn btn-sm btn-outline" href="mailto:hello@staytuloy.com?subject=Kwarto%20feedback">Leave Feedback</a>
         </div>
         <div class="nc-foot-legal">
           <p>© 2026 Kwarto, all rights reserved.</p>
-          <span class="tiny">Example data, not live rates.</span>
+          <span class="tiny">Rates and booking via Booking.com.</span>
         </div>
       </div>
     </div>
