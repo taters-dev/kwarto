@@ -38,7 +38,7 @@ window.KWARTO_POSTS = [
         "The pool is a proper Mediterranean-style courtyard affair with cabanas, which in Beverly Hills is rarer than you\u2019d think.",
         "Four Seasons housekeeping and a concierge desk that can actually get you a table."
       ] },
-      { type: "img", src: "https://images.unsplash.com/photo-1580655653885-65763b2597d0?auto=format&fit=crop&w=1400&q=70", alt: "Palm trees along a Los Angeles street at sunset", caption: "Beverly Hills is flat and walkable — one of the few Los Angeles neighbourhoods where you can leave the car parked." },
+      { type: "img", src: "https://images.unsplash.com/photo-1580655653885-65763b2597d0?auto=format&fit=crop&w=1400&q=70", alt: "Palm trees along a Los Angeles street at sunset", caption: "Palm-lined streets on the west side of Los Angeles. Beverly Hills is flat and walkable — one of the few neighbourhoods where you can leave the car parked." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "$960 buys you the entry-level King. Rooms facing Wilshire Boulevard hear traffic; ask for the Beverly Wing or an upper floor if you\u2019re a light sleeper. Valet parking is extra and expensive, so if you\u2019re flying in, skip the rental and use rideshares. Rates swing hard with awards season and the big conventions — mid-week in late autumn and January is where the lower numbers live." },
       { type: "cta", label: "Check Beverly Wilshire rates on Booking.com", note: "Opens Booking.com with your dates already filled in." },
