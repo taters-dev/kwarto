@@ -1213,4 +1213,14 @@
       }
     }
   }, true);
+
+  // Shared helpers for page scripts loaded after app.js (blog.js uses these so
+  // article CTAs deep-link to Booking.com with the reader's stay dates).
+  window.Kwarto = Object.assign(window.Kwarto || {}, {
+    bookingUrl: bookingUrl,
+    stayDates: stayDates,
+    escapeHtml: escapeHtml,
+    currency: currency,
+    RATE: RATE
+  });
 })();
