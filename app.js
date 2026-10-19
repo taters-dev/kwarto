@@ -164,10 +164,25 @@
     return { kind: "text", text: raw.trim() };
   }
 
+  function ymdLocal(d) {
+    const p = (n) => (n < 10 ? "0" + n : String(n));
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+
+  // Default stay is tonight: check in today, check out tomorrow.
+  function defaultStay() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    return { checkIn: ymdLocal(today), checkOut: ymdLocal(tomorrow) };
+  }
+
   function stayDates() {
     const form = document.querySelector("form.search");
-    const checkIn = (form && form.checkin && form.checkin.value) || params.get("checkin") || "2026-09-12";
-    const checkOut = (form && form.checkout && form.checkout.value) || params.get("checkout") || "2026-09-15";
+    const fallback = defaultStay();
+    const checkIn = (form && form.checkin && form.checkin.value) || params.get("checkin") || fallback.checkIn;
+    const checkOut = (form && form.checkout && form.checkout.value) || params.get("checkout") || fallback.checkOut;
     const guests = (form && form.guests && form.guests.value) || params.get("guests") || "2";
     const children = (form && form.children && form.children.value) || params.get("children") || "0";
     const childages = (form && form.childages && form.childages.value) || params.get("childages") || "";
