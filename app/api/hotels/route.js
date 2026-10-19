@@ -21,11 +21,12 @@ function addDays(ymd, days) {
   return d.toISOString().slice(0, 10);
 }
 
+// Default stay is tonight (check in today, check out tomorrow), matching the client.
 function stayFromParams(params) {
-  const fallbackIn = formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+  const fallbackIn = formatDate(new Date());
   const checkIn = parseYmd(params.get("checkIn") || params.get("checkin")) || fallbackIn;
   let checkOut = parseYmd(params.get("checkOut") || params.get("checkout"));
-  if (!checkOut || checkOut <= checkIn) checkOut = addDays(checkIn, 3);
+  if (!checkOut || checkOut <= checkIn) checkOut = addDays(checkIn, 1);
   return { checkIn, checkOut };
 }
 
