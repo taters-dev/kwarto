@@ -76,6 +76,25 @@
     return POSTS.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
   }
 
+  function sourceHost(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ""); } catch (e) { return ""; }
+  }
+
+  /* "Spotted on nitecrawler.com" for sourced posts; the Philippine editor's pick says so instead. */
+  function sourceHtml(post) {
+    if (post.sourceUrl) {
+      return '<span class="blog-source-k">Spotted on</span> <a href="' + esc(post.sourceUrl) + '" target="_blank" rel="noopener nofollow">' + esc(sourceHost(post.sourceUrl) || "the source") + '</a>';
+    }
+    if (post.editorsPick) {
+      return '<span class="blog-source-k">Kwarto editor\u2019s pick</span> \u00b7 not listed on nitecrawler.com yet';
+    }
+    return "";
+  }
+
+  function locLabel(post) {
+    return post.location + (post.country && post.location.indexOf(post.country) === -1 ? ", " + post.country : "");
+  }
+
   function cardHtml(post, opts) {
     var big = opts && opts.featured;
     var img = big ? post.heroImage.replace(/w=\d+/, "w=1400") : post.heroImage.replace(/w=\d+/, "w=800");
@@ -83,7 +102,7 @@
       '<div class="blog-card-media"><img src="' + esc(img) + '" alt="' + esc(post.heroAlt || "") + '" loading="' + (big ? "eager" : "lazy") + '" decoding="async" />' +
       '<span class="blog-chip blog-chip-' + esc(catSlug(post.category)) + '">' + esc(post.category) + '</span></div>' +
       '<div class="blog-card-body">' +
-      '<p class="blog-card-loc">' + esc(post.location) + (post.country && post.location.indexOf(post.country) === -1 ? ", " + esc(post.country) : "") + '</p>' +
+      '<p class="blog-card-loc">' + (post.editorsPick ? '<span class="blog-pick">Editor\u2019s pick</span> \u00b7 ' : "") + esc(locLabel(post)) + '</p>' +
       '<h3>' + esc(post.title) + '</h3>' +
       '<p class="blog-card-dek">' + esc(post.dek) + '</p>' +
       '<div class="blog-card-foot"><time datetime="' + esc(post.date) + '">' + esc(big ? prettyDate(post.date) : shortDate(post.date)) + '</time>' +
@@ -252,7 +271,12 @@
       el.textContent = post.category;
       el.href = "/blog?cat=" + catSlug(post.category);
     });
-    set("[data-post-location]", function (el) { el.textContent = post.location + (post.country && post.location.indexOf(post.country) === -1 ? ", " + post.country : ""); });
+    set("[data-post-location]", function (el) { el.textContent = locLabel(post); });
+    set("[data-post-source]", function (el) {
+      var html = sourceHtml(post);
+      el.innerHTML = html;
+      el.hidden = !html;
+    });
     set("[data-post-date]", function (el) {
       el.textContent = prettyDate(post.date);
       el.setAttribute("datetime", post.date);
@@ -267,7 +291,7 @@
       el.innerHTML = (post.body || []).map(function (b) { return blockHtml(b, post); }).join("");
     });
     set("[data-book-title]", function (el) { el.textContent = post.hotelName || ("Hotels in " + post.city); });
-    set("[data-book-place]", function (el) { el.textContent = post.location + (post.country && post.location.indexOf(post.country) === -1 ? ", " + post.country : ""); });
+    set("[data-book-place]", function (el) { el.textContent = locLabel(post); });
     set("[data-book-price]", function (el) {
       el.innerHTML = post.priceFrom ? priceLabel(post) + '<span class="blog-book-per"> / night, indicative</span>' : "";
       el.hidden = !post.priceFrom;

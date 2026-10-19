@@ -2020,6 +2020,7 @@ body.guest-open .nc-band { z-index: 45; }
   color: #fff;
 }
 .blog-hero .nc-sub { max-width: 56ch; font-weight: 400; font-size: 1.1rem; margin: 0; }
+.blog-hero .nc-sub a { color: inherit; font-weight: 700; border-bottom: 1px solid currentColor; }
 
 .blog-feed { padding: 8px 0 56px; }
 .blog-toolbar {
@@ -2161,6 +2162,16 @@ body.guest-open .nc-band { z-index: 45; }
 }
 .blog-meta-loc { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
 .blog-meta-loc svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Source attribution: "Spotted on nitecrawler.com" or the editor's-pick note. */
+.blog-source {
+  margin: -12px 0 24px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.blog-source[hidden] { display: none; }
+.blog-source-k { font-weight: 700; color: var(--ink); }
+.blog-source a { color: var(--red); font-weight: 700; border-bottom: 1px solid currentColor; }
+.blog-pick { color: var(--red); }
 .blog-body p { max-width: 66ch; font-size: 1rem; line-height: 1.6; }
 .blog-body h2 { font-size: 1.35rem; margin: 32px 0 12px; }
 .blog-body ul { margin: 0 0 24px; padding-left: 20px; max-width: 66ch; }

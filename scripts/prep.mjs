@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels16";
+const cacheBust = "hotels17";
 const need = ["index.html", "cebu.html", "hotel.html", "results.html", "blog.html", "blog-post.html", "cal.js", "guests.js", "app.js", "blog.js", "blog-posts.js", "styles.css"];
 
 function applyCacheBust(html) {
@@ -424,8 +424,22 @@ if (postSlugs.length < 6 || new Set(postSlugs).size !== postSlugs.length) {
   process.exit(1);
 }
 const postCountries = new Set([...blogPosts.matchAll(/country:\s*"([^"]+)"/g)].map((m) => m[1]));
-if (postCountries.size < 4 || !postCountries.has("Philippines")) {
-  console.error("prep abort: blog posts must span several countries (and keep a Philippine pick)");
+if (postCountries.size < 2 || !postCountries.has("United States") || !postCountries.has("Philippines")) {
+  console.error("prep abort: blog posts must cover nitecrawler's US hotels and keep one Philippine editor's pick");
+  process.exit(1);
+}
+// Posts are sourced from nitecrawler.com: every sourceUrl points there, the editor's pick is flagged, and the article shows the attribution line.
+const sourceUrls = [...blogPosts.matchAll(/sourceUrl:\s*"([^"]+)"/g)].map((m) => m[1]);
+if (sourceUrls.length < 6 || sourceUrls.some((u) => !/^https:\/\/www\.nitecrawler\.com\/destinations\//.test(u)) || new Set(sourceUrls).size !== sourceUrls.length) {
+  console.error("prep abort: need at least 6 posts with unique nitecrawler.com sourceUrls, got", sourceUrls.length);
+  process.exit(1);
+}
+if ((blogPosts.match(/editorsPick:\s*true/g) || []).length !== 1 || !blogPosts.includes('country: "Philippines"')) {
+  console.error("prep abort: exactly one post is the Philippine editor's pick");
+  process.exit(1);
+}
+if (!blogJs.includes("Spotted on") || !blogJs.includes("sourceUrl") || !blogPost.includes("data-post-source") || !cssOut.includes(".blog-source")) {
+  console.error("prep abort: articles must show the Spotted on nitecrawler.com attribution");
   process.exit(1);
 }
 if (!blogJs.includes("window.Kwarto") || !blogJs.includes("bookingUrl") || !appjs.includes("window.Kwarto = Object.assign")) {
