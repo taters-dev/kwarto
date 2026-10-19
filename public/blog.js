@@ -2,7 +2,10 @@
    - /blog (blog.html): featured post + filterable card grid.
    - /blog/<slug> or blog-post.html?post=<slug>: full article, "Where to book" box, related posts.
    - index.html: "Latest from the blog" row ([data-blog-latest]).
-   Depends on blog-posts.js (window.KWARTO_POSTS) and app.js (window.Kwarto.bookingUrl). */
+   CTAs: posts spotted on nitecrawler.com link to their nitecrawler listing (post.sourceUrl) with the
+   reader's stay appended as arrival/departure/adults/kids — the params nitecrawler's own /results
+   search URLs use. The Philippine editor's pick has no nitecrawler listing, so it keeps Booking.com
+   via app.js window.Kwarto.bookingUrl(). Depends on blog-posts.js (window.KWARTO_POSTS) and app.js. */
 (function () {
   var POSTS = Array.isArray(window.KWARTO_POSTS) ? window.KWARTO_POSTS.slice() : [];
   var K = window.Kwarto || {};
@@ -72,6 +75,40 @@
     return u.toString();
   }
 
+  /* nitecrawler listing + the reader's stay. Param names match nitecrawler's /results URLs
+     (?adults=2&arrival=YYYY-MM-DD&departure=YYYY-MM-DD&kids=0). Falls back to the bare listing URL. */
+  function nitecrawlerHref(sourceUrl) {
+    try {
+      var u = new URL(sourceUrl);
+      var s = K.stayDates ? K.stayDates() : null;
+      if (s && s.checkIn && s.checkOut) {
+        u.searchParams.set("arrival", s.checkIn);
+        u.searchParams.set("departure", s.checkOut);
+        u.searchParams.set("adults", String(Number(s.guests) || 2));
+        u.searchParams.set("kids", String(Number(s.children) || 0));
+      }
+      return u.toString();
+    } catch (e) {
+      return sourceUrl;
+    }
+  }
+
+  /* Sourced posts go to nitecrawler unless the block names a different hotel/area (then Booking.com). */
+  function ctaTarget(block, post) {
+    if (post.sourceUrl && !(block && block.hotel)) {
+      return { partner: "nitecrawler", label: "nitecrawler.com", href: nitecrawlerHref(post.sourceUrl), source: post.sourceUrl };
+    }
+    var hotel = (block && block.hotel) || post.hotelName || post.city;
+    var city = (block && block.city) || post.city;
+    return { partner: "booking", label: "Booking.com", href: bookHref(hotel, city), hotel: hotel, city: city };
+  }
+
+  function ctaAttrs(t) {
+    return t.partner === "nitecrawler"
+      ? ' data-book-source="' + esc(t.source) + '"'
+      : ' data-book-hotel="' + esc(t.hotel) + '" data-book-city="' + esc(t.city) + '"';
+  }
+
   function sorted() {
     return POSTS.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
   }
@@ -111,10 +148,9 @@
   }
 
   function ctaHtml(block, post) {
-    var hotel = block.hotel || post.hotelName || post.city;
-    var city = block.city || post.city;
+    var t = ctaTarget(block, post);
     return '<div class="blog-cta">' +
-      '<a class="btn btn-red blog-book" href="' + esc(bookHref(hotel, city)) + '" target="_blank" rel="noopener" data-book-hotel="' + esc(hotel) + '" data-book-city="' + esc(city) + '">' + esc(block.label || "Check rates on Booking.com") + '</a>' +
+      '<a class="btn btn-red blog-book" href="' + esc(t.href) + '" target="_blank" rel="noopener"' + ctaAttrs(t) + '>' + esc(block.label || ("See rates on " + (t.partner === "nitecrawler" ? "nitecrawler" : "Booking.com"))) + '</a>' +
       (block.note ? '<p class="blog-cta-note">' + esc(block.note) + '</p>' : "") +
       '</div>';
   }
@@ -137,6 +173,9 @@
   }
 
   function refreshBookLinks() {
+    document.querySelectorAll("[data-book-source]").forEach(function (a) {
+      a.href = nitecrawlerHref(a.getAttribute("data-book-source"));
+    });
     document.querySelectorAll("[data-book-hotel]").forEach(function (a) {
       a.href = bookHref(a.getAttribute("data-book-hotel"), a.getAttribute("data-book-city"));
     });
@@ -296,10 +335,28 @@
       el.innerHTML = post.priceFrom ? priceLabel(post) + '<span class="blog-book-per"> / night, indicative</span>' : "";
       el.hidden = !post.priceFrom;
     });
+    var primary = ctaTarget(null, post);
     set("[data-book-primary]", function (el) {
-      el.setAttribute("data-book-hotel", post.hotelName || post.city);
-      el.setAttribute("data-book-city", post.city);
-      el.textContent = post.hotelName ? "Check rates on Booking.com" : "See hotels on Booking.com";
+      el.removeAttribute("data-book-source");
+      el.removeAttribute("data-book-hotel");
+      el.removeAttribute("data-book-city");
+      if (primary.partner === "nitecrawler") {
+        el.setAttribute("data-book-source", primary.source);
+        el.textContent = "See rates on nitecrawler";
+      } else {
+        el.setAttribute("data-book-hotel", primary.hotel);
+        el.setAttribute("data-book-city", primary.city);
+        el.textContent = post.hotelName ? "See rates on Booking.com" : "See hotels on Booking.com";
+      }
+      el.href = primary.href;
+      el.setAttribute("target", "_blank");
+      el.setAttribute("rel", "noopener");
+    });
+    set("[data-book-partner]", function (el) { el.textContent = primary.label; });
+    set("[data-book-partner-note]", function (el) {
+      el.textContent = primary.partner === "nitecrawler"
+        ? "This is the listing we spotted. Your dates carry over."
+        : "Our editor\u2019s pick isn\u2019t on nitecrawler yet, so this one opens Booking.com with your dates.";
     });
     set("[data-book-city-link]", function (el) {
       var slugCity = post.citySlug || String(post.city || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");

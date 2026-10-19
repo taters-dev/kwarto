@@ -2,8 +2,8 @@
    Plain data; blog.js renders it on /blog, /blog/<slug>, and the homepage row.
    Every post is about one hotel we spotted on nitecrawler.com (sourceUrl links to its listing there),
    plus one Kwarto editor's pick from the Philippines, which nitecrawler doesn't cover yet.
-   Rates are indicative snapshots, not live prices — the CTA always opens Booking.com
-   with the reader's own dates so they see today's number. */
+   Rates are indicative snapshots, not live prices — the CTA opens the hotel's nitecrawler.com listing
+   (or Booking.com for the editor's pick) with the reader's own dates so they see today's number. */
 window.KWARTO_POSTS = [
   {
     slug: "beverly-wilshire-four-seasons-960-a-night",
@@ -41,7 +41,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1580655653885-65763b2597d0?auto=format&fit=crop&w=1400&q=70", alt: "Palm trees along a Los Angeles street at sunset", caption: "Palm-lined streets on the west side of Los Angeles. Beverly Hills is flat and walkable — one of the few neighbourhoods where you can leave the car parked." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "$960 buys you the entry-level King. Rooms facing Wilshire Boulevard hear traffic; ask for the Beverly Wing or an upper floor if you\u2019re a light sleeper. Valet parking is extra and expensive, so if you\u2019re flying in, skip the rental and use rideshares. Rates swing hard with awards season and the big conventions — mid-week in late autumn and January is where the lower numbers live." },
-      { type: "cta", label: "Check Beverly Wilshire rates on Booking.com", note: "Opens Booking.com with your dates already filled in." },
+      { type: "cta", label: "See Beverly Wilshire rates on nitecrawler", note: "Opens the nitecrawler.com listing with your dates already filled in." },
       { type: "h2", text: "If it\u2019s out of budget" },
       { type: "p", text: "Nitecrawler\u2019s Los Angeles list has two very different alternatives: the Hollywood Roosevelt, a 1927 landmark with a famous pool for a fraction of the price, and Shutters on the Beach in Santa Monica if what you really want is the ocean. We\u2019ve written up both." }
     ]
@@ -65,7 +65,7 @@ window.KWARTO_POSTS = [
       { type: "p", text: "Las Vegas hotels are enormous, and the enormous ones are not all equal. The Cosmopolitan sits at 3708 Las Vegas Boulevard South, dead centre of the Strip, between the Bellagio and the Aria. It has 3,041 rooms, which sounds like a convention centre, but it was built in 2010 as a five-star and it still feels like one: the rooms are bigger than the Strip average, most have terraces, and the restaurant floor is the best single block of dining in the city." },
       { type: "deal", title: "The deal", rows: [
         ["Where", "3708 Las Vegas Boulevard South — centre Strip, 5 minutes on foot to the Fountains of Bellagio"],
-        ["Rate", "Nightly rates move daily; nitecrawler.com shows the live number for your dates"],
+        ["Rate", "Nightly rates move daily; the nitecrawler.com listing below shows the live number for your dates"],
         ["Resort fee", "$62.36 a night, charged at the hotel on top of the room rate"],
         ["Includes", "Spa, multiple pools, fitness centre, 19 restaurants and bars, casino"],
         ["Best for", "First-timers who want to walk everywhere, groups, food-led weekends"]
@@ -80,7 +80,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?auto=format&fit=crop&w=1400&q=70", alt: "The Welcome to Fabulous Las Vegas sign under palm trees", caption: "The classic sign is at the south end of the Strip — a short rideshare from centre Strip." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "The resort fee is the thing to budget for. At $62.36 a night it can add a third to a cheap mid-week rate, and it is charged whether or not you use the pool or the gym. Compare the all-in total, not the headline. Weekends and big fight or convention weeks roughly double rates; Sunday to Thursday is where the value is. If you want a terrace, filter for it explicitly — the entry-level rooms don\u2019t all have one." },
-      { type: "cta", label: "Check Cosmopolitan rates on Booking.com", note: "Opens with your dates and guests." },
+      { type: "cta", label: "See Cosmopolitan rates on nitecrawler", note: "Opens the nitecrawler.com listing with your dates and guests." },
       { type: "h2", text: "Also on nitecrawler\u2019s Las Vegas list" },
       { type: "p", text: "Wynn Las Vegas, at the north end of the Strip, has the same $62.36 resort fee but adds a golf course, three pools and thirteen restaurants including Delilah. It\u2019s the quieter, more polished choice if you don\u2019t mind being a longer walk from the centre." }
     ]
@@ -119,7 +119,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1400&q=70", alt: "Times Square at street level with its billboards lit", caption: "Times Square is three blocks west — close enough to walk to a show, far enough not to hear it." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "Two things. First, the $34.42 nightly resort fee: add it to whatever rate you see before you compare. Second, nitecrawler flags a lobby renovation running from 10 August to 30 October 2026 — if you\u2019re arriving before the end of October, expect a temporary check-in setup and some noise during the day. Rooms are not affected. After that, it should be back to normal." },
-      { type: "cta", label: "Check Bryant Park Hotel rates on Booking.com", note: "Opens with your stay dates." },
+      { type: "cta", label: "See Bryant Park Hotel rates on nitecrawler", note: "Opens the nitecrawler.com listing with your stay dates." },
       { type: "h2", text: "If it\u2019s full" },
       { type: "p", text: "Arlo NoMad, a dozen blocks south near the Empire State Building, is the pick if you\u2019d trade room size for a rooftop bar and a lower rate — we\u2019ve written it up separately. For a bigger, more polished downtown option, nitecrawler also lists the Conrad New York Downtown, an all-suite Art Deco tower ten minutes\u2019 walk from One World Trade Center." }
     ]
@@ -157,7 +157,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1400&q=70", alt: "Hotel pool lit up at dusk with loungers around it", caption: "Book a cabana room if you plan to spend more time by the pool than in the room." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "Hollywood Boulevard is loud and touristy at street level; that\u2019s the trade for the location. Tower rooms on higher floors facing away from the boulevard are the quiet ones. The pool bar and the hotel\u2019s club nights can run late on weekends — ask for a room away from the courtyard if you\u2019re an early sleeper. Parking is valet-only and priced like Los Angeles." },
-      { type: "cta", label: "Check Hollywood Roosevelt rates on Booking.com", note: "Opens with your dates already filled in." },
+      { type: "cta", label: "See Hollywood Roosevelt rates on nitecrawler", note: "Opens the nitecrawler.com listing with your dates already filled in." },
       { type: "h2", text: "Also on nitecrawler\u2019s LA list" },
       { type: "p", text: "Petit Ermitage in West Hollywood is the 79-room bohemian alternative — fireplaces, a rooftop pool, and a very different crowd. If you want the beach instead, read our Shutters on the Beach pick." }
     ]
@@ -196,7 +196,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1400&q=70", alt: "Infinity pool looking out to the sea", caption: "Mactan\u2019s east coast faces the channel, not the open sea — good for swimming, better for island-hopping boats." },
       { type: "h2", text: "What to know" },
       { type: "p", text: "Weekends sell out two to three weeks ahead during Sinulog (January) and Holy Week. Mid-week rates are 20–30% lower across the board. Most Mactan resorts charge a day-use fee for non-guests, so booking in — even for one night — is often cheaper than paying for a day pass twice." },
-      { type: "cta", label: "Check Crimson Mactan on Booking.com", note: "Opens with your dates and guests." },
+      { type: "cta", label: "See Crimson Mactan rates on Booking.com", note: "Nitecrawler doesn\u2019t list Philippine hotels yet, so this opens Booking.com with your dates and guests." },
       { type: "h2", text: "Nearby alternatives" },
       { type: "ul", items: [
         "Dusit Thani Mactan — newer, bigger pool, slightly further north. $150–$200.",
@@ -239,7 +239,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1400&q=70", alt: "Compact hotel room with a double bed and a city window", caption: "Entry-level rooms are built around the bed and the window. Pack light and you won\u2019t notice." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "Standard rooms are around 150 square feet; if you\u2019re two people with two suitcases, pay for the larger king or a corner room. Rooms facing 31st Street are livelier at night than the ones facing the courtyard. The rooftop bar is open to the public and gets busy on Friday and Saturday evenings — go up early if you want the sunset to yourself." },
-      { type: "cta", label: "Check Arlo NoMad rates on Booking.com", note: "Opens with your stay dates." },
+      { type: "cta", label: "See Arlo NoMad rates on nitecrawler", note: "Opens the nitecrawler.com listing with your stay dates." },
       { type: "h2", text: "If you want more room" },
       { type: "p", text: "The Bryant Park Hotel, ten blocks north, is the boutique step up with a park across the street. Our write-up covers the resort fee and the current lobby renovation." }
     ]
@@ -277,7 +277,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=70", alt: "A striped deckchair on the sand under palm trees", caption: "Ocean-view rooms have shuttered doors that open fully to the sea air — ask for the front of the building." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "Rooms are classed by view, and the difference between a partial and a full ocean view is real — the full-view rooms on the front of the building are worth the premium. The pool is small by LA standards; the beach is the point. Summer weekends and the week after Christmas book out months ahead. Valet parking is expensive, and you genuinely don\u2019t need a car here." },
-      { type: "cta", label: "Check Shutters on the Beach on Booking.com", note: "Opens with your dates already filled in." },
+      { type: "cta", label: "See Shutters on the Beach rates on nitecrawler", note: "Opens the nitecrawler.com listing with your dates already filled in." },
       { type: "h2", text: "Other LA picks from nitecrawler" },
       { type: "p", text: "For the Hollywood end of the city, read our pick of the Hollywood Roosevelt; for the full Beverly Hills experience, the Beverly Wilshire. All three are on nitecrawler.com\u2019s Los Angeles list." }
     ]
@@ -316,7 +316,7 @@ window.KWARTO_POSTS = [
       { type: "img", src: "https://images.unsplash.com/photo-1494522855154-9297ac14b55f?auto=format&fit=crop&w=1400&q=70", alt: "Cloud Gate sculpture reflecting the Chicago skyline", caption: "Millennium Park and the Bean are a 20-minute walk south along Michigan Avenue." },
       { type: "h2", text: "What to know before you book" },
       { type: "p", text: "Two honest flags from the nitecrawler listing. The resort fee is $35.67 a night, on top of whatever rate you see — add it before you compare. And the indoor pool is closed through 31 December 2026, so if a swim is non-negotiable, look elsewhere until the new year. Streeterville is quiet after dark, which is either a feature or a bug depending on your trip; River North\u2019s restaurants are a ten-minute walk west." },
-      { type: "cta", label: "Check Loews Chicago rates on Booking.com", note: "Opens with your stay dates." },
+      { type: "cta", label: "See Loews Chicago rates on nitecrawler", note: "Opens the nitecrawler.com listing with your stay dates." },
       { type: "h2", text: "Also on nitecrawler\u2019s Chicago list" },
       { type: "p", text: "The Chicago Hotel Collection \u2013 Magnificent Mile is a 216-room Art Deco property a tenth of a mile off Michigan Avenue, with a $49.95 resort fee. It\u2019s the pick if you want to be right on the shopping rather than by the water." }
     ]

@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 mkdirSync("public", { recursive: true });
 
-const cacheBust = "hotels17";
+const cacheBust = "hotels18";
 const need = ["index.html", "cebu.html", "hotel.html", "results.html", "blog.html", "blog-post.html", "cal.js", "guests.js", "app.js", "blog.js", "blog-posts.js", "styles.css"];
 
 function applyCacheBust(html) {
@@ -442,12 +442,34 @@ if (!blogJs.includes("Spotted on") || !blogJs.includes("sourceUrl") || !blogPost
   console.error("prep abort: articles must show the Spotted on nitecrawler.com attribution");
   process.exit(1);
 }
-if (!blogJs.includes("window.Kwarto") || !blogJs.includes("bookingUrl") || !appjs.includes("window.Kwarto = Object.assign")) {
-  console.error("prep abort: blog CTAs must deep-link through app.js bookingUrl()");
+// Blog CTAs: posts spotted on nitecrawler link to their nitecrawler listing (sourceUrl) with the stay appended
+// as arrival/departure/adults/kids; the Philippine editor's pick (no nitecrawler listing) keeps Booking.com via bookingUrl().
+if (!blogJs.includes("function nitecrawlerHref") || !blogJs.includes("data-book-source") || !blogJs.includes('"arrival"') || !blogJs.includes('"departure"') || !blogJs.includes("See rates on nitecrawler")) {
+  console.error("prep abort: blog CTAs for nitecrawler-sourced posts must open the nitecrawler listing with the reader's dates");
   process.exit(1);
 }
-if (!blogPost.includes('name="checkin"') || !blogPost.includes('id="guests-trigger"') || !blogJs.includes("data-book-hotel")) {
-  console.error("prep abort: blog Where-to-book box must carry stay dates and guests into the CTA");
+if (!blogJs.includes("window.Kwarto") || !blogJs.includes("bookingUrl") || !blogJs.includes("data-book-hotel") || !appjs.includes("window.Kwarto = Object.assign")) {
+  console.error("prep abort: the editor's-pick blog CTA must still deep-link through app.js bookingUrl()");
+  process.exit(1);
+}
+// Sourced posts must not label their CTAs "Booking.com"; only the editor's pick may.
+const postBlocks = blogPosts.split(/\n  \{\n    slug:/).slice(1);
+for (const block of postBlocks) {
+  const slug = (block.match(/^\s*"([a-z0-9-]+)"/) || [])[1];
+  const sourced = /sourceUrl:\s*"https:\/\/www\.nitecrawler\.com/.test(block);
+  const pick = /editorsPick:\s*true/.test(block);
+  const ctaLabels = [...block.matchAll(/type:\s*"cta",\s*label:\s*"([^"]+)"/g)].map((m) => m[1]);
+  if (sourced && ctaLabels.some((l) => /booking\.com/i.test(l))) {
+    console.error("prep abort: nitecrawler-sourced post must not send readers to Booking.com:", slug);
+    process.exit(1);
+  }
+  if (pick && !ctaLabels.some((l) => /booking\.com/i.test(l))) {
+    console.error("prep abort: editor's pick must keep a Booking.com CTA:", slug);
+    process.exit(1);
+  }
+}
+if (!blogPost.includes('name="checkin"') || !blogPost.includes('id="guests-trigger"') || !blogPost.includes("data-book-primary") || !blogPost.includes("data-book-partner") || blogPost.includes("Check rates on Booking.com")) {
+  console.error("prep abort: blog Where-to-book box must carry stay dates and guests into the CTA and name the partner");
   process.exit(1);
 }
 for (const [name, html] of [["index.html", index], ["cebu.html", cebu], ["results.html", results], ["hotel.html", hotel], ["blog.html", blog], ["blog-post.html", blogPost]]) {
